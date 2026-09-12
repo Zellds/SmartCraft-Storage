@@ -4,6 +4,12 @@ All options live in BepInEx's [Configuration Manager](https://valheim.thundersto
 split into five sections. Every option also has its own description
 inside the Configuration Manager itself.
 
+On a server that also has this mod installed, every section except
+**Hotkeys** is set by the server: its values are pushed to each client on
+connect and shown locked. Your config file is not modified and your own
+values come back when you disconnect. Solo play, and servers without the
+mod, use your own settings throughout.
+
 ## Hotkeys
 
 | Option | Default | Description |

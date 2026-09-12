@@ -1,10 +1,16 @@
 using BepInEx;
 using HarmonyLib;
+using Jotunn.Utils;
 
 namespace SmartCraftStorage
 {
     [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
     [BepInDependency(Jotunn.Main.ModGuid)]
+    // Gameplay settings are bound as admin-only so a server dictates them to its
+    // clients. IfOnServer limits that to servers actually running this mod; the
+    // default (Always) would also lock and reset them for players joining a server
+    // without it, leaving them stuck on defaults.
+    [SynchronizationMode(AdminOnlyStrictness.IfOnServer)]
     public class Plugin : BaseUnityPlugin
     {
         public const string PluginGuid = "com.zellds.smartcraftstorage";

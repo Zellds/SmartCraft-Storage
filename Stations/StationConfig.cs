@@ -34,7 +34,8 @@ namespace SmartCraftStorage.Stations
                 10f,
                 new ConfigDescription(
                     "Radius (in meters) in which fireplaces/torches/hearths search nearby chests for fuel.",
-                    new AcceptableValueRange<float>(0f, 100f)));
+                    new AcceptableValueRange<float>(0f, 100f),
+                    new ConfigurationManagerAttributes { IsAdminOnly = true }));
 
             SmelterKilnRadius = config.Bind(
                 "Stations",
@@ -42,7 +43,8 @@ namespace SmartCraftStorage.Stations
                 10f,
                 new ConfigDescription(
                     "Radius (in meters) shared between smelters and charcoal kilns to search nearby chests.",
-                    new AcceptableValueRange<float>(0f, 100f)));
+                    new AcceptableValueRange<float>(0f, 100f),
+                    new ConfigurationManagerAttributes { IsAdminOnly = true }));
 
             CookingStationRadius = config.Bind(
                 "Stations",
@@ -50,22 +52,30 @@ namespace SmartCraftStorage.Stations
                 10f,
                 new ConfigDescription(
                     "Radius (in meters) in which cooking stations search nearby chests for raw food.",
-                    new AcceptableValueRange<float>(0f, 100f)));
+                    new AcceptableValueRange<float>(0f, 100f),
+                    new ConfigurationManagerAttributes { IsAdminOnly = true }));
 
             FireplaceAutoRefuel = config.Bind("Stations", "FireplaceAutoRefuel", true,
-                "Fireplaces/torches automatically pull fuel from nearby chests.");
+                new ConfigDescription("Fireplaces/torches automatically pull fuel from nearby chests.",
+                    null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
             SmelterAutoRefuel = config.Bind("Stations", "SmelterAutoRefuel", true,
-                "Smelters automatically pull ore/fuel from nearby chests.");
+                new ConfigDescription("Smelters automatically pull ore/fuel from nearby chests.",
+                    null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
             SmelterAutoCollect = config.Bind("Stations", "SmelterAutoCollect", true,
-                "Smelters store the produced bar in the nearest chest instead of dropping it on the ground.");
+                new ConfigDescription("Smelters store the produced bar in the nearest chest instead of dropping it on the ground.",
+                    null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
             KilnAutoRefuel = config.Bind("Stations", "KilnAutoRefuel", true,
-                "Charcoal kilns automatically pull wood from nearby chests.");
+                new ConfigDescription("Charcoal kilns automatically pull wood from nearby chests.",
+                    null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
             KilnAutoCollect = config.Bind("Stations", "KilnAutoCollect", true,
-                "Charcoal kilns store the coal they produce (or feed nearby smelters first) instead of dropping it on the ground.");
+                new ConfigDescription("Charcoal kilns store the coal they produce (or feed nearby smelters first) instead of dropping it on the ground.",
+                    null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
             CookingStationAutoRefuel = config.Bind("Stations", "CookingStationAutoRefuel", true,
-                "Cooking stations automatically pull raw food (and their own fuel, if applicable) from nearby chests.");
+                new ConfigDescription("Cooking stations automatically pull raw food (and their own fuel, if applicable) from nearby chests.",
+                    null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
             CookingStationAutoCollect = config.Bind("Stations", "CookingStationAutoCollect", true,
-                "Cooking stations collect finished food on their own and store it in the nearest chest, without needing to interact.");
+                new ConfigDescription("Cooking stations collect finished food on their own and store it in the nearest chest, without needing to interact.",
+                    null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
 
             KilnWoodBuffer = config.Bind(
                 "Charcoal Kiln",
@@ -73,7 +83,8 @@ namespace SmartCraftStorage.Stations
                 3,
                 new ConfigDescription(
                     "Wood level the kiln tries to keep in its internal queue (not its max capacity).",
-                    new AcceptableValueRange<int>(1, 50)));
+                    new AcceptableValueRange<int>(1, 50),
+                    new ConfigurationManagerAttributes { IsAdminOnly = true }));
 
             KilnMaxCoalInChest = config.Bind(
                 "Charcoal Kiln",
@@ -81,13 +92,15 @@ namespace SmartCraftStorage.Stations
                 50,
                 new ConfigDescription(
                     "The kiln stops pulling new wood once nearby chest(s) already hold this much coal combined.",
-                    new AcceptableValueRange<int>(1, 9999)));
+                    new AcceptableValueRange<int>(1, 9999),
+                    new ConfigurationManagerAttributes { IsAdminOnly = true }));
 
             KilnFeedStrategyConfig = config.Bind(
                 "Charcoal Kiln",
                 "KilnFeedStrategy",
                 KilnFeedStrategy.LeastFuelFirst,
-                "How the kiln picks which nearby smelter to feed first with the coal it produces.");
+                new ConfigDescription("How the kiln picks which nearby smelter to feed first with the coal it produces.",
+                    null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
         }
     }
 }
