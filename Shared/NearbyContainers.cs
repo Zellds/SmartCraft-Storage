@@ -40,6 +40,11 @@ namespace SmartCraftStorage.Shared
                 }
             }
 
+            // Nearest first, so callers that stop at the first usable chest use the
+            // closest one. Squared distance orders identically and skips the sqrt.
+            result.Sort((a, b) => (a.transform.position - origin).sqrMagnitude
+                .CompareTo((b.transform.position - origin).sqrMagnitude));
+
             return result;
         }
 
