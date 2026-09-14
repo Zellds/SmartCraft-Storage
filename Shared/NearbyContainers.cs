@@ -88,23 +88,7 @@ namespace SmartCraftStorage.Shared
                 {
                     continue;
                 }
-                if (container.GetInventory() == null)
-                {
-                    continue;
-                }
-                if (container.GetComponent<TombStone>() != null)
-                {
-                    continue;
-                }
-                if (IsInUseByAnyone(container))
-                {
-                    continue;
-                }
-                if (!container.CheckAccess(playerId))
-                {
-                    continue;
-                }
-                if (!PrivateArea.CheckAccess(container.transform.position, 0f, false))
+                if (!IsUsableBy(container, playerId))
                 {
                     continue;
                 }
@@ -156,9 +140,51 @@ namespace SmartCraftStorage.Shared
             return nview.IsOwner();
         }
 
+        // Every write this mod makes to a chest goes through here, so this is where
+        // the multiplayer race is closed. ClaimOwnership() is not a lock — it always
+        // succeeds — so the only thing keeping us out of a chest somebody else has
+        // open is the in-use check, and by now that check may be stale: the container
+        // list is cached for a fraction of a second, and the game itself only reloads
+        // a container's ZDO once a second (Container.CheckForChanges). Another player
+        // can open a chest, or a ward's permissions can change, between the search
+        // and this write, so re-test rather than trusting what was true at search
+        // time. Callers already skip to the next chest when this returns false.
         public static bool TryClaimWriteAccess(Container container)
         {
+            var player = Player.m_localPlayer;
+            if (container == null || player == null)
+            {
+                return false;
+            }
+            if (!IsUsableBy(container, player.GetPlayerID()))
+            {
+                return false;
+            }
+
             return TryClaimWriteAccess(container.m_nview);
+        }
+
+        // The rules for "this chest is fair game", applied both when searching and
+        // again immediately before writing, so the two can never drift apart.
+        private static bool IsUsableBy(Container container, long playerId)
+        {
+            if (container == null || container.GetInventory() == null)
+            {
+                return false;
+            }
+            if (container.GetComponent<TombStone>() != null)
+            {
+                return false;
+            }
+            if (IsInUseByAnyone(container))
+            {
+                return false;
+            }
+            if (!container.CheckAccess(playerId))
+            {
+                return false;
+            }
+            return PrivateArea.CheckAccess(container.transform.position, 0f, false);
         }
 
         private static bool IsInUseByAnyone(Container container)
