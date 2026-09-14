@@ -19,8 +19,10 @@
     rather than from Thunderstore. Harmless to leave on; on by default.
 
 .PARAMETER ValheimInstall
-    Path to the Valheim install. Defaults to $env:VALHEIM_INSTALL, then to the
-    location Directory.Build.props already guesses.
+    Path to the Valheim install. Defaults to $env:VALHEIM_INSTALL, and failing
+    that the script looks Valheim up in every Steam library on the machine —
+    Directory.Build.props only guesses the default C:\ location, which is wrong
+    as soon as the game lives in a library on another drive.
 
 .EXAMPLE
     ./scripts/package.ps1
@@ -38,6 +40,78 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+# A Valheim install is only the right one if the assemblies we compile against
+# are actually in it — a path that merely exists produces 60 unresolved-reference
+# warnings and then a compile failure, which is far harder to read than this.
+function Test-ValheimInstall([string] $path) {
+    return $path -and (Test-Path (Join-Path $path 'valheim_Data/Managed/assembly_valheim.dll'))
+}
+
+# Steam records every library folder, on every drive, in libraryfolders.vdf.
+function Get-SteamLibraries {
+    $steam = $null
+    foreach ($key in 'HKCU:\Software\Valve\Steam', 'HKLM:\SOFTWARE\WOW6432Node\Valve\Steam', 'HKLM:\SOFTWARE\Valve\Steam') {
+        try {
+            $prop = Get-ItemProperty -Path $key -ErrorAction Stop
+            foreach ($name in 'SteamPath', 'InstallPath') {
+                if ($prop.PSObject.Properties.Name -contains $name -and $prop.$name) {
+                    $steam = $prop.$name
+                    break
+                }
+            }
+        }
+        catch { }
+        if ($steam) { break }
+    }
+
+    $roots = @()
+    if ($steam) { $roots += $steam }
+    $roots += 'C:/Program Files (x86)/Steam'
+
+    $libraries = @()
+    foreach ($root in $roots) {
+        $libraries += $root
+        $vdf = Join-Path $root 'steamapps/libraryfolders.vdf'
+        if (Test-Path $vdf) {
+            foreach ($match in [regex]::Matches((Get-Content $vdf -Raw), '"path"\s+"([^"]+)"')) {
+                $libraries += $match.Groups[1].Value -replace '\\\\', '\'
+            }
+        }
+    }
+
+    return $libraries | Select-Object -Unique
+}
+
+function Find-ValheimInstall([string] $explicit) {
+    if ($explicit) {
+        if (-not (Test-ValheimInstall $explicit)) {
+            throw "No Valheim install at '$explicit' — expected valheim_Data/Managed/assembly_valheim.dll under it."
+        }
+        return $explicit
+    }
+
+    foreach ($library in Get-SteamLibraries) {
+        $candidate = Join-Path $library 'steamapps/common/Valheim'
+        if (Test-ValheimInstall $candidate) { return $candidate }
+    }
+
+    throw @'
+Could not find your Valheim install.
+
+This build compiles against the game's own assemblies, so it needs to know
+where Valheim is. Steam puts it under whichever library folder you chose,
+which is often not the default C:\ one.
+
+Pass it explicitly:
+    ./scripts/package.ps1 -ValheimInstall "D:\SteamLibrary\steamapps\common\Valheim"
+
+or set it once for all builds (including plain `dotnet build`):
+    $env:VALHEIM_INSTALL = "D:\SteamLibrary\steamapps\common\Valheim"
+
+The folder you want is the one containing valheim.exe.
+'@
+}
+
 $repo = Split-Path -Parent $PSScriptRoot
 $manifestPath = Join-Path $repo 'manifest.json'
 $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
@@ -47,11 +121,15 @@ if ($Version -notmatch '^\d+\.\d+\.\d+$') {
     throw "Version must be major.minor.patch (Thunderstore rejects anything else); got '$Version'."
 }
 
-if ($ValheimInstall) { $env:VALHEIM_INSTALL = $ValheimInstall }
+$valheim = Find-ValheimInstall $ValheimInstall
+$env:VALHEIM_INSTALL = $valheim
+Write-Host "Valheim:  $valheim" -ForegroundColor DarkGray
 
 Write-Host "Building $Configuration..." -ForegroundColor Cyan
 dotnet build (Join-Path $repo 'SmartCraftStorage.csproj') -c $Configuration
-if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
+if ($LASTEXITCODE -ne 0) {
+    throw "Build failed (compiling against $valheim). Scroll up for the compiler errors."
+}
 
 $dll = Join-Path $repo "bin/$Configuration/net48/SmartCraftStorage.dll"
 if (-not (Test-Path $dll)) { throw "Built plugin not found at $dll" }
