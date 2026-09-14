@@ -183,12 +183,22 @@ namespace SmartCraftStorage.Stations
 
                     foreach (var container in NearbyContainers.Find(__instance.transform.position, StationConfig.CookingStationRadius.Value, player))
                     {
+                        // Ask before adding: Inventory.AddItem on a full container
+                        // returns false *and* logs "Trying to add item to occupied
+                        // slot -1, -1" as an error. Walking a row of full chests
+                        // otherwise fills the log with errors that are not errors.
+                        var chestInventory = container.GetInventory();
+                        if (!chestInventory.CanAddItem(itemPrefab, 1))
+                        {
+                            continue;
+                        }
+
                         if (!NearbyContainers.TryClaimWriteAccess(container))
                         {
                             continue;
                         }
 
-                        if (container.GetInventory().AddItem(itemPrefab, 1))
+                        if (chestInventory.AddItem(itemPrefab, 1))
                         {
                             return false;
                         }

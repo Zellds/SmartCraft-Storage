@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Stations no longer make the game log `Trying to add item to occupied slot -1, -1` as an error while storing their output. `Inventory.AddItem` logs that when a container is full rather than just declining, so a row of full chests filled the log with errors that were not errors; the containers are now asked with `CanAddItem` first
+- The restock-marked item list is no longer split and rebuilt into a set on every frame the inventory is open, which was this mod's largest per-frame allocation
 - Multiplayer: a chest is now re-checked for being free, permitted and unwarded immediately before anything is written to it, instead of only when it was found. `ClaimOwnership()` always succeeds, so that check was the only thing keeping the automations out of a chest another player had just opened
 - `scripts/package.ps1` builds the installable zip in one command; bumped the pinned BepInEx dependency to 5.4.2350
 - Ingredient rows now show how much you can actually spend in brackets after the required amount (`10 (34)`), in both the crafting panel and the build HUD; toggle with the new `Crafting/ShowAvailableAmounts` option

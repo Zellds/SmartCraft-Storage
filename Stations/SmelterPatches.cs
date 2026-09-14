@@ -229,12 +229,19 @@ namespace SmartCraftStorage.Stations
                             break;
                         }
 
+                        // Same reason as the cooking station: AddItem on a full
+                        // container logs an error rather than just declining.
+                        var chestInventory = container.GetInventory();
+                        if (!chestInventory.CanAddItem(conversion.m_to.gameObject, remaining))
+                        {
+                            continue;
+                        }
+
                         if (!NearbyContainers.TryClaimWriteAccess(container))
                         {
                             continue;
                         }
 
-                        var chestInventory = container.GetInventory();
                         int before = chestInventory.CountItems(itemName);
                         chestInventory.AddItem(conversion.m_to.gameObject, remaining);
                         int added = chestInventory.CountItems(itemName) - before;

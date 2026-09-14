@@ -53,7 +53,10 @@ namespace SmartCraftStorage.Shared
             }
         }
 
-        private static Collider[] _hits = new Collider[256];
+        // Sized from what a built-up base actually returns - a 20m sweep there
+        // comes back with roughly 400 colliders. Starting under that just makes
+        // the first sweep run the query twice before it grows.
+        private static Collider[] _hits = new Collider[512];
         private const int MaxHits = 8192;
 
         private static readonly CacheEntry[] Cache = CreateCache();
