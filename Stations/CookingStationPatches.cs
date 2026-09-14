@@ -27,6 +27,17 @@ namespace SmartCraftStorage.Stations
                         return;
                     }
 
+                    // UpdateCooking runs once a second on every cooking station in
+                    // range. Check whether there is any room to fill before searching
+                    // for chests, so an idle full station costs nothing.
+                    bool wantsFood = __instance.GetFreeSlot() != -1;
+                    bool wantsFuel = __instance.m_useFuel && __instance.m_fuelItem != null
+                        && __instance.GetFuel() < __instance.m_maxFuel;
+                    if (!wantsFood && !wantsFuel)
+                    {
+                        return;
+                    }
+
                     var containers = new List<Container>(
                         NearbyContainers.Find(__instance.transform.position, StationConfig.CookingStationRadius.Value, player));
 

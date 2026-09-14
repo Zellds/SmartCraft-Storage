@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using SmartCraftStorage.Shared;
-using UnityEngine;
 
 namespace SmartCraftStorage.Stations
 {
@@ -25,6 +24,17 @@ namespace SmartCraftStorage.Stations
 
                     var player = Player.m_localPlayer;
                     if (player == null)
+                    {
+                        return;
+                    }
+
+                    // UpdateSmelter runs once a second on every smelter and kiln in
+                    // range. Check whether there is any room to fill before searching
+                    // for chests, so a base full of topped-up smelters costs nothing.
+                    bool wantsOre = __instance.GetQueueSize() < (isKiln ? StationConfig.KilnWoodBuffer.Value : __instance.m_maxOre);
+                    bool wantsFuel = __instance.m_maxFuel > 0 && __instance.m_fuelItem != null
+                        && __instance.GetFuel() < __instance.m_maxFuel;
+                    if (!wantsOre && !wantsFuel)
                     {
                         return;
                     }
@@ -248,12 +258,14 @@ namespace SmartCraftStorage.Stations
             {
                 string coalName = KilnDetection.GetCoalItemName(kiln);
                 var candidates = new List<Smelter>();
-                var hits = Physics.OverlapSphere(kiln.transform.position, StationConfig.SmelterKilnRadius.Value);
+                var seen = new HashSet<Smelter>();
+                var kilnPosition = kiln.transform.position;
+                int hitCount = NearbyContainers.OverlapNearby(kilnPosition, StationConfig.SmelterKilnRadius.Value);
 
-                foreach (var hit in hits)
+                for (int i = 0; i < hitCount; i++)
                 {
-                    var smelter = hit.GetComponentInParent<Smelter>();
-                    if (smelter == null || smelter == kiln || KilnDetection.IsKiln(smelter))
+                    var smelter = NearbyContainers.Hits[i].GetComponentInParent<Smelter>();
+                    if (smelter == null || smelter == kiln || !seen.Add(smelter) || KilnDetection.IsKiln(smelter))
                     {
                         continue;
                     }
@@ -269,10 +281,8 @@ namespace SmartCraftStorage.Stations
                     {
                         continue;
                     }
-                    if (!candidates.Contains(smelter))
-                    {
-                        candidates.Add(smelter);
-                    }
+
+                    candidates.Add(smelter);
                 }
 
                 if (candidates.Count == 0)
@@ -286,8 +296,9 @@ namespace SmartCraftStorage.Stations
                 }
                 else
                 {
-                    candidates.Sort((a, b) => Vector3.Distance(kiln.transform.position, a.transform.position)
-                        .CompareTo(Vector3.Distance(kiln.transform.position, b.transform.position)));
+                    // Squared distance orders identically and skips the sqrt.
+                    candidates.Sort((a, b) => (a.transform.position - kilnPosition).sqrMagnitude
+                        .CompareTo((b.transform.position - kilnPosition).sqrMagnitude));
                 }
 
                 foreach (var smelter in candidates)

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+- The nearby-chest lookup is now cached at the source (`NearbyContainers.Find`), per origin and radius, so every feature benefits rather than only the crafting/building path fixed in 0.4.1; the physics sweep is also restricted to the layers containers can be on and no longer allocates on every call
+- Fireplaces already skipped the chest search when full; smelters, kilns and cooking stations now do too, so a base full of topped-up stations no longer sweeps for chests once a second each
+
 ## 0.4.2
 - Fixed a beehive item duplication bug: if the automatic honey collection could only partially fit the harvested honey into nearby chests, the leftover was also duplicated on the ground instead of just the leftover being dropped
 - Automatic beehive collection now leaves the honey queued in the hive (instead of dropping any of it) when no nearby chest can fit it all; manually interacting with the hive still drops the leftover on the ground as usual
