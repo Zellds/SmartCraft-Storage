@@ -48,6 +48,24 @@ item) only while the modifier is held.
 Messages shown by quick-stack and restock are localized (English,
 Portuguese-Brazilian, Spanish so far) based on your in-game language.
 
+## Building
+
+Requires the [.NET SDK](https://dotnet.microsoft.com/download) and a Valheim
+install. Set `VALHEIM_INSTALL` if yours is not in the default Steam location.
+
+```pwsh
+dotnet build -c Release          # just the plugin -> bin/Release/net48/
+./scripts/package.ps1            # the installable zip -> dist/
+./scripts/package.ps1 -Version 0.2.1   # override the version for a test build
+```
+
+`package.ps1` produces a Thunderstore-layout zip you can also hand to
+r2modman or Thunderstore Mod Manager directly through **Settings → Import
+local mod**. Note that `bin/Release/net48/` additionally contains the game's
+own assemblies (`assembly_valheim.dll`, `Jotunn.dll`, the UnityEngine
+modules) because they are build references — the package deliberately ships
+only `SmartCraftStorage.dll`.
+
 ## Links
 
 [GitHub](https://github.com/Zellds/SmartCraft-Storage) · [@urano_jpg](https://x.com/urano_jpg)
