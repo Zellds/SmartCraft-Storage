@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Ingredient rows now show how much you can actually spend in brackets after the required amount (`10 (34)`), in both the crafting panel and the build HUD; toggle with the new `Crafting/ShowAvailableAmounts` option
 - The nearby-chest lookup is now cached at the source (`NearbyContainers.Find`), per origin and radius, so every feature benefits rather than only the crafting/building path fixed in 0.4.1; the physics sweep is also restricted to the layers containers can be on and no longer allocates on every call
 - Fireplaces already skipped the chest search when full; smelters, kilns and cooking stations now do too, so a base full of topped-up stations no longer sweeps for chests once a second each
 

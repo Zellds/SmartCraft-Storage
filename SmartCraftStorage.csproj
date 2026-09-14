@@ -42,6 +42,9 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>$(ValheimManagedDir)/UnityEngine.UI.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(ValheimManagedDir)/Unity.TextMeshPro.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UIModule">
       <HintPath>$(ValheimManagedDir)/UnityEngine.UIModule.dll</HintPath>
     </Reference>
