@@ -72,6 +72,10 @@ namespace SmartCraftStorage.Shared
                 return entry.Containers;
             }
 
+            // A different set of chests means any cached chest total is about a set
+            // that no longer applies.
+            ChestCountCache.Invalidate();
+
             entry = TakeOldestSlot();
             entry.Origin = origin;
             entry.Radius = radius;
@@ -181,7 +185,17 @@ namespace SmartCraftStorage.Shared
                 return false;
             }
 
-            return TryClaimWriteAccess(container.m_nview);
+            if (!TryClaimWriteAccess(container.m_nview))
+            {
+                return false;
+            }
+
+            // Every container write in this mod passes through here, so this is the
+            // one place that reliably catches "the chests just changed". Claiming
+            // access does not guarantee a write follows, but clearing needlessly
+            // only costs a recount, while missing one would show a wrong number.
+            ChestCountCache.Invalidate();
+            return true;
         }
 
         // The rules for "this chest is fair game", applied both when searching and
