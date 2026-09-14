@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- The beehive auto-harvest added in 0.3.0 gets the same treatment as the other stations: it no longer makes the game log `Trying to add item to occupied slot -1, -1` when a chest is full
 - Item counts from nearby chests are now reused for the rest of the frame instead of being recounted per query. The game asks the same question several times per frame by design — `SetupRequirement` counts an ingredient to colour the label and the bracket then counts it again, and `HaveRequirementItems` counts every ingredient once per quality level for every recipe whenever the crafting list refreshes. Only the chest half is cached: your own inventory is still counted live on every call, and the chest total is dropped at the end of the frame, when the set of nearby chests changes, and whenever this mod writes to a container
 - Stations no longer make the game log `Trying to add item to occupied slot -1, -1` as an error while storing their output. `Inventory.AddItem` logs that when a container is full rather than just declining, so a row of full chests filled the log with errors that were not errors; the containers are now asked first, using the same rule `AddItem` applies (a free slot, or free stack space at the current world level)
 - The restock-marked item list is no longer split and rebuilt into a set on every frame the inventory is open, which was this mod's largest per-frame allocation
