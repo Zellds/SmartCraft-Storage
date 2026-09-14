@@ -181,14 +181,23 @@ namespace SmartCraftStorage.Stations
                         return true;
                     }
 
+                    var itemDrop = itemPrefab.GetComponent<ItemDrop>();
+                    if (itemDrop == null)
+                    {
+                        return true;
+                    }
+
+                    string itemName = itemDrop.m_itemData.m_shared.m_name;
+
                     foreach (var container in NearbyContainers.Find(__instance.transform.position, StationConfig.CookingStationRadius.Value, player))
                     {
                         // Ask before adding: Inventory.AddItem on a full container
                         // returns false *and* logs "Trying to add item to occupied
                         // slot -1, -1" as an error. Walking a row of full chests
-                        // otherwise fills the log with errors that are not errors.
+                        // otherwise fills the log with errors that are not errors —
+                        // and writing those out costs more than the check does.
                         var chestInventory = container.GetInventory();
-                        if (!chestInventory.CanAddItem(itemPrefab, 1))
+                        if (!NearbyContainers.HasRoomFor(chestInventory, itemName))
                         {
                             continue;
                         }

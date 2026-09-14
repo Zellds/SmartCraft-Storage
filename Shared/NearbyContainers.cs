@@ -129,6 +129,23 @@ namespace SmartCraftStorage.Shared
             }
         }
 
+        // Inventory.AddItem logs "Trying to add item to occupied slot -1, -1" as an
+        // error when the container has no room, instead of just returning false, so
+        // ask first. This mirrors AddItem's own rule exactly rather than going
+        // through CanAddItem: AddItem stacks only onto stacks at the *current* world
+        // level (FindFreeStackItem compares m_worldLevel), and otherwise needs a free
+        // slot, whereas CanAddItem measures stack space at the prefab's world level
+        // and would still let the error through on a slot-full container.
+        public static bool HasRoomFor(Inventory inventory, string itemName)
+        {
+            if (inventory == null)
+            {
+                return false;
+            }
+
+            return inventory.HaveEmptySlot() || inventory.FindFreeStackSpace(itemName, Game.m_worldLevel) > 0;
+        }
+
         public static bool TryClaimWriteAccess(ZNetView nview)
         {
             if (nview == null || !nview.IsValid())

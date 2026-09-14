@@ -230,9 +230,13 @@ namespace SmartCraftStorage.Stations
                         }
 
                         // Same reason as the cooking station: AddItem on a full
-                        // container logs an error rather than just declining.
+                        // container logs an error rather than just declining. Room
+                        // for one is the right question — AddItem clamps to a single
+                        // stack and the count either side of it already handles a
+                        // partial add, so asking for all of `remaining` would skip
+                        // chests that could still take some.
                         var chestInventory = container.GetInventory();
-                        if (!chestInventory.CanAddItem(conversion.m_to.gameObject, remaining))
+                        if (!NearbyContainers.HasRoomFor(chestInventory, itemName))
                         {
                             continue;
                         }
