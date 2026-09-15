@@ -5,10 +5,11 @@ split into sections. Every option also has its own description inside the
 Configuration Manager itself.
 
 On a server that also has this mod installed, every section except
-**Hotkeys** is set by the server: its values are pushed to each client on
-connect and shown locked. Your config file is not modified and your own
-values come back when you disconnect. Solo play, and servers without the
-mod, use your own settings throughout.
+**Hotkeys** and **Crafting** is set by the server: its values are pushed
+to each client on connect and shown locked. Those two are display and
+input preferences, so they always stay yours. Your config file is not
+modified and your own values come back when you disconnect. Solo play,
+and servers without the mod, use your own settings throughout.
 
 ## Hotkeys
 
@@ -18,6 +19,12 @@ mod, use your own settings throughout.
 | `RestockShortcut` | Ctrl + E | Full key combo for restock — click the value and press the combo you want |
 | `LockClickShortcut` | Alt | Key(s) held while left-clicking an item to toggle its lock |
 | `RestockMarkClickShortcut` | Alt + Ctrl | Key(s) held while left-clicking an item to mark it for restock — independent of `LockClickShortcut`, does not require it to also be held |
+
+## Crafting (display)
+
+| Option | Default | Description |
+|---|---|---|
+| `ShowAvailableAmounts` | on | Show how much of each ingredient you can actually spend, in brackets after the required amount (e.g. `10 (34)`), in both the crafting panel and the build HUD |
 
 ## Radii (storage/restock/crafting-from-chest)
 

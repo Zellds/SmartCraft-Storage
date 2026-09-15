@@ -27,6 +27,17 @@ namespace SmartCraftStorage.Stations
                         return;
                     }
 
+                    // UpdateCooking runs once a second on every cooking station in
+                    // range. Check whether there is any room to fill before searching
+                    // for chests, so an idle full station costs nothing.
+                    bool wantsFood = __instance.GetFreeSlot() != -1;
+                    bool wantsFuel = __instance.m_useFuel && __instance.m_fuelItem != null
+                        && __instance.GetFuel() < __instance.m_maxFuel;
+                    if (!wantsFood && !wantsFuel)
+                    {
+                        return;
+                    }
+
                     var containers = new List<Container>(
                         NearbyContainers.Find(__instance.transform.position, StationConfig.CookingStationRadius.Value, player));
 
@@ -170,14 +181,33 @@ namespace SmartCraftStorage.Stations
                         return true;
                     }
 
+                    var itemDrop = itemPrefab.GetComponent<ItemDrop>();
+                    if (itemDrop == null)
+                    {
+                        return true;
+                    }
+
+                    string itemName = itemDrop.m_itemData.m_shared.m_name;
+
                     foreach (var container in NearbyContainers.Find(__instance.transform.position, StationConfig.CookingStationRadius.Value, player))
                     {
+                        // Ask before adding: Inventory.AddItem on a full container
+                        // returns false *and* logs "Trying to add item to occupied
+                        // slot -1, -1" as an error. Walking a row of full chests
+                        // otherwise fills the log with errors that are not errors —
+                        // and writing those out costs more than the check does.
+                        var chestInventory = container.GetInventory();
+                        if (!NearbyContainers.HasRoomFor(chestInventory, itemName))
+                        {
+                            continue;
+                        }
+
                         if (!NearbyContainers.TryClaimWriteAccess(container))
                         {
                             continue;
                         }
 
-                        if (container.GetInventory().AddItem(itemPrefab, 1))
+                        if (chestInventory.AddItem(itemPrefab, 1))
                         {
                             return false;
                         }

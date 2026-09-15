@@ -28,7 +28,7 @@ namespace SmartCraftStorage.ItemMarking
 
                 int width = __instance.m_inventory.GetWidth();
                 var localPlayer = Player.m_localPlayer;
-                var restockNames = localPlayer != null ? new HashSet<string>(RestockList.GetAll(localPlayer)) : null;
+                var restockNames = localPlayer != null ? RestockList.GetSet(localPlayer) : null;
 
                 foreach (var element in __instance.m_elements)
                 {

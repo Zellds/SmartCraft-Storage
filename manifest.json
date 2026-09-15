@@ -4,7 +4,7 @@
     "version_number": "0.4.2",
     "website_url": "https://github.com/Zellds/SmartCraft-Storage",
     "dependencies": [
-        "denikson-BepInExPack_Valheim-5.4.2333",
+        "denikson-BepInExPack_Valheim-5.4.2350",
         "ValheimModding-Jotunn-2.30.0"
     ]
 }

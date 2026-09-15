@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+- The beehive auto-harvest added in 0.3.0 gets the same treatment as the other stations: it no longer makes the game log `Trying to add item to occupied slot -1, -1` when a chest is full
+- Item counts from nearby chests are now reused for the rest of the frame instead of being recounted per query. The game asks the same question several times per frame by design — `SetupRequirement` counts an ingredient to colour the label and the bracket then counts it again, and `HaveRequirementItems` counts every ingredient once per quality level for every recipe whenever the crafting list refreshes. Only the chest half is cached: your own inventory is still counted live on every call, and the chest total is dropped at the end of the frame, when the set of nearby chests changes, and whenever this mod writes to a container
+- Stations no longer make the game log `Trying to add item to occupied slot -1, -1` as an error while storing their output. `Inventory.AddItem` logs that when a container is full rather than just declining, so a row of full chests filled the log with errors that were not errors; the containers are now asked first, using the same rule `AddItem` applies (a free slot, or free stack space at the current world level)
+- The restock-marked item list is no longer split and rebuilt into a set on every frame the inventory is open, which was this mod's largest per-frame allocation
+- Multiplayer: a chest is now re-checked for being free, permitted and unwarded immediately before anything is written to it, instead of only when it was found. `ClaimOwnership()` always succeeds, so that check was the only thing keeping the automations out of a chest another player had just opened
+- `scripts/package.ps1` builds the installable zip in one command; bumped the pinned BepInEx dependency to 5.4.2350
+- Ingredient rows now show how much you can actually spend in brackets after the required amount (`10 (34)`), in both the crafting panel and the build HUD; toggle with the new `Crafting/ShowAvailableAmounts` option
+- The nearby-chest lookup is now cached at the source (`NearbyContainers.Find`), per origin and radius, so every feature benefits rather than only the crafting/building path fixed in 0.4.1; the physics sweep is also restricted to the layers containers can be on and no longer allocates on every call
+- Fireplaces already skipped the chest search when full; smelters, kilns and cooking stations now do too, so a base full of topped-up stations no longer sweeps for chests once a second each
+
 ## 0.4.2
 - Fixed a beehive item duplication bug: if the automatic honey collection could only partially fit the harvested honey into nearby chests, the leftover was also duplicated on the ground instead of just the leftover being dropped
 - Automatic beehive collection now leaves the honey queued in the hive (instead of dropping any of it) when no nearby chest can fit it all; manually interacting with the hive still drops the leftover on the ground as usual

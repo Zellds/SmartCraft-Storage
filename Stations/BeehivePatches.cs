@@ -91,12 +91,21 @@ namespace SmartCraftStorage.Stations
                             break;
                         }
 
+                        // AddItem on a full container logs "Trying to add item to
+                        // occupied slot -1, -1" as an error rather than just declining,
+                        // so ask first — room for one is enough, the count either side
+                        // already handles a partial add.
+                        var chestInventory = container.GetInventory();
+                        if (!NearbyContainers.HasRoomFor(chestInventory, itemName))
+                        {
+                            continue;
+                        }
+
                         if (!NearbyContainers.TryClaimWriteAccess(container))
                         {
                             continue;
                         }
 
-                        var chestInventory = container.GetInventory();
                         int before = chestInventory.CountItems(itemName);
                         chestInventory.AddItem(__instance.m_honeyItem.gameObject, remaining);
                         int added = chestInventory.CountItems(itemName) - before;

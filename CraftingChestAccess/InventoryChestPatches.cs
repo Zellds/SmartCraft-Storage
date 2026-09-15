@@ -30,10 +30,22 @@ namespace SmartCraftStorage.CraftingChestAccess
                         return;
                     }
 
-                    foreach (var container in NearbyChestCache.Get(player.transform.position, ModConfig.CraftingChestRadius.Value, player))
+                    // Only the chest half is cached; __result already holds the
+                    // player's own live count, so what you carry is never stale.
+                    if (ChestCountCache.TryGet(name, quality, matchWorldLevel, out int cached))
                     {
-                        __result += container.GetInventory().CountItems(name, quality, matchWorldLevel);
+                        __result += cached;
+                        return;
                     }
+
+                    int chestTotal = 0;
+                    foreach (var container in NearbyContainers.Find(player.transform.position, ModConfig.CraftingChestRadius.Value, player))
+                    {
+                        chestTotal += container.GetInventory().CountItems(name, quality, matchWorldLevel);
+                    }
+
+                    ChestCountCache.Store(name, quality, matchWorldLevel, chestTotal);
+                    __result += chestTotal;
                 }
                 catch (System.Exception ex)
                 {
@@ -110,6 +122,7 @@ namespace SmartCraftStorage.CraftingChestAccess
                         if (takeFromChest > 0)
                         {
                             chestInventory.RemoveItem(name, takeFromChest, itemQuality, worldLevelBased);
+                            ChestCountCache.Invalidate();
                             remaining -= takeFromChest;
                             amount += takeFromChest;
                             NearbyChestCache.Invalidate();
