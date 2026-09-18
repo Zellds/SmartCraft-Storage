@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../Shared/NearbyContainers.cs" Link="NearbyContainers.cs" />
+    <Compile Include="../../Shared/ChestCountCache.cs" Link="ChestCountCache.cs" />
+  </ItemGroup>
+</Project>

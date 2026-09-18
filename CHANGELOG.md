@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Restore nearby cart storage discovery for quick-stack and other storage features while retaining the filtered, cached physics query.
+
 ## 0.6.0
 - If you also have Epic Loot installed, the Enchanter can now use materials from nearby chests too, the same way crafting and building already do. Not required, only kicks in when Epic Loot is present
 

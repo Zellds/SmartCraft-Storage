@@ -21,12 +21,13 @@ namespace SmartCraftStorage.Shared
         // updating on their own timers, which would otherwise evict each other.
         private const int CacheSlots = 8;
 
-        // Chests sit on "piece"; ship and cart holds on "vehicle". The rest are
+        // Chests sit on "piece"; physical vehicle colliders on "vehicle". The rest are
         // included as cheap insurance for containers on other layers — what matters is
         // that terrain, characters, dropped items, hitboxes and trigger volumes never
         // reach GetComponentInParent.
         private static int _queryMask;
         private static bool _queryMaskResolved;
+        private static int _vehicleLayer = -1;
 
         private static int QueryMask
         {
@@ -38,6 +39,7 @@ namespace SmartCraftStorage.Shared
                 }
 
                 _queryMask = LayerMask.GetMask("piece", "piece_nonsolid", "vehicle", "Default", "static_solid", "Default_small");
+                _vehicleLayer = LayerMask.NameToLayer("vehicle");
                 _queryMaskResolved = true;
 
                 if (_queryMask == 0)
@@ -90,7 +92,19 @@ namespace SmartCraftStorage.Shared
 
             for (int i = 0; i < hitCount; i++)
             {
-                var container = _hits[i].GetComponentInParent<Container>();
+                var hit = _hits[i];
+                var container = hit.GetComponentInParent<Container>();
+                if (container == null && hit.gameObject.layer == _vehicleLayer)
+                {
+                    // A cart's hold is on the excluded "item" layer, beside its
+                    // vehicle colliders. The Vagon owns the reference to that hold.
+                    // Avoid another ancestry walk for every wall, rock and tree.
+                    var vagon = hit.GetComponentInParent<Vagon>();
+                    if (vagon != null)
+                    {
+                        container = vagon.m_container;
+                    }
+                }
                 if (container == null || !Seen.Add(container))
                 {
                     continue;
