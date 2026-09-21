@@ -25,6 +25,16 @@ and servers without the mod, use your own settings throughout.
 | Option | Default | Description |
 |---|---|---|
 | `ShowAvailableAmounts` | on | Show how much of each ingredient you can actually spend, in brackets after the required amount (e.g. `10(34)`), in both the crafting panel and the build HUD |
+| `AvailableAmountFormat` | `Compact` | How that amount is written — see below. Ignored while `ShowAvailableAmounts` is off |
+
+The ingredient slot is only so wide, so the label is shrunk to fit it whichever format
+you pick. The formats differ in how much shrinking they ask for:
+
+| Format | Looks like | Notes |
+|---|---|---|
+| `Compact` | `10(1.1k)` | Narrowest. Abbreviates past a thousand — `1.1k`, `25k`, `2.1M` |
+| `Exact` | `10(1087)` | The number in full, in the same small brackets |
+| `Spaced` | `10 (1087)` | The number in full at the game's own text size. Widest, and the most likely to be shrunk on a crowded recipe |
 
 ## Radii (storage/restock/crafting-from-chest)
 

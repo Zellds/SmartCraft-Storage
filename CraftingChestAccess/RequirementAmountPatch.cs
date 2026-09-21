@@ -48,7 +48,7 @@ namespace SmartCraftStorage.CraftingChestAccess
                 int available = player.GetInventory().CountItems(req.m_resItem.m_itemData.m_shared.m_name);
 
                 KeepInsideSlot(amountText);
-                amountText.text = required + "<size=60%>(" + Abbreviate(available) + ")</size>";
+                amountText.text = Compose(required, available, ModConfig.AvailableAmountFormat.Value);
             }
             catch (System.Exception ex)
             {
@@ -94,6 +94,19 @@ namespace SmartCraftStorage.CraftingChestAccess
         // Rows are pooled and reused, so the settings above outlive this feature being
         // switched off mid-session. That is harmless: a bare required amount is short
         // enough to render at fontSizeMax, which is the size the prefab shipped with.
+
+        // Auto-sizing still backs every one of these: the widest format is the one most
+        // likely to need shrinking, not the one exempt from it.
+        private static string Compose(int required, int available, AmountFormat format)
+        {
+            if (format == AmountFormat.Spaced)
+            {
+                return required + " (" + available + ")";
+            }
+
+            string count = format == AmountFormat.Compact ? Abbreviate(available) : available.ToString();
+            return required + "<size=60%>(" + count + ")</size>";
+        }
 
         // Four digits already crowd the slot, so the count is abbreviated from a
         // thousand up rather than from ten thousand. The ceiling below is 999500 and
