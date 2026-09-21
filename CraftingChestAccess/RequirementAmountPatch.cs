@@ -48,7 +48,7 @@ namespace SmartCraftStorage.CraftingChestAccess
                 int available = player.GetInventory().CountItems(req.m_resItem.m_itemData.m_shared.m_name);
 
                 KeepInsideSlot(amountText);
-                amountText.text = required + " <size=60%>(" + Abbreviate(available) + ")</size>";
+                amountText.text = required + "<size=60%>(" + Abbreviate(available) + ")</size>";
             }
             catch (System.Exception ex)
             {
@@ -84,8 +84,8 @@ namespace SmartCraftStorage.CraftingChestAccess
             // whatever TMP last computed for the current text, not the prefab value.
             label.fontSizeMax = label.fontSize;
             label.fontSizeMin = label.fontSize * 0.6f;
-            // Without this the space before the bracket is a wrap point, and TMP would
-            // break the line rather than shrink it.
+            // Without this TMP treats the bracket as a break opportunity and wraps the
+            // line rather than shrinking it, then auto-sizes to fit the height instead.
             label.textWrappingMode = TextWrappingModes.NoWrap;
             label.richText = true;
             label.enableAutoSizing = true;

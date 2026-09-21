@@ -16,7 +16,7 @@ namespace SmartCraftStorage.Config
                 "Crafting",
                 "ShowAvailableAmounts",
                 true,
-                "Show how much of each ingredient you can actually spend, in brackets after the required amount (e.g. \"10 (34)\"). Includes nearby chests wherever crafting from them is allowed.");
+                "Show how much of each ingredient you can actually spend, in brackets after the required amount (e.g. \"10(34)\"). Includes nearby chests wherever crafting from them is allowed.");
 
             QuickStackRadius = config.Bind(
                 "Radii",

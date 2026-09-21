@@ -24,7 +24,7 @@ and servers without the mod, use your own settings throughout.
 
 | Option | Default | Description |
 |---|---|---|
-| `ShowAvailableAmounts` | on | Show how much of each ingredient you can actually spend, in brackets after the required amount (e.g. `10 (34)`), in both the crafting panel and the build HUD |
+| `ShowAvailableAmounts` | on | Show how much of each ingredient you can actually spend, in brackets after the required amount (e.g. `10(34)`), in both the crafting panel and the build HUD |
 
 ## Radii (storage/restock/crafting-from-chest)
 

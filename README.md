@@ -20,7 +20,7 @@ server doesn't need it at all.
 - **Lock and restock:** `Alt + left-click` locks an item so quick-stack never moves it. `Alt + Ctrl + left-click` marks it for restock instead.
 - **Restock:** Press `Ctrl + E` to refill every marked item to a full stack from nearby chests, even from zero.
 - **Crafting and building:** Use materials from nearby chests within a configurable radius (default 20m) — no need to open them.
-- **Available amounts:** Every ingredient shows what you can actually spend in brackets after the amount it needs — `10 (34)` — in both the crafting panel and the build HUD.
+- **Available amounts:** Every ingredient shows what you can actually spend in brackets after the amount it needs — `10(34)` — in both the crafting panel and the build HUD.
 - **Repair-all:** The station's Repair button fixes every repairable equipped item in one click instead of one at a time.
 - **Fuel and ingredients:** Fireplaces, smelters, charcoal kilns, and cooking stations pull fuel/ingredients from nearby chests and store their output automatically — each behavior toggleable on its own.
 - **Beehives:** Honey is harvested automatically as soon as it's ready and stored in the nearest chest, no need to visit the hive.
