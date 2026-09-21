@@ -48,7 +48,7 @@ namespace SmartCraftStorage.CraftingChestAccess
                 int available = player.GetInventory().CountItems(req.m_resItem.m_itemData.m_shared.m_name);
 
                 KeepInsideSlot(amountText);
-                amountText.text = required + " <size=70%>(" + Abbreviate(available) + ")</size>";
+                amountText.text = required + " <size=60%>(" + Abbreviate(available) + ")</size>";
             }
             catch (System.Exception ex)
             {
@@ -95,21 +95,38 @@ namespace SmartCraftStorage.CraftingChestAccess
         // switched off mid-session. That is harmless: a bare required amount is short
         // enough to render at fontSizeMax, which is the size the prefab shipped with.
 
-        // Five and six digit stacks are normal once chests are counted, and every digit
-        // costs width. Abbreviating past four gives the label a bounded worst case.
+        // Four digits already crowd the slot, so the count is abbreviated from a
+        // thousand up rather than from ten thousand. The ceiling below is 999500 and
+        // not a round million because Scale rounds: 999600 reads as "1M", and letting
+        // it through the k branch would print "1000k".
         private static string Abbreviate(int amount)
         {
-            if (amount < 10000)
+            if (amount < 1000)
             {
                 return amount.ToString();
             }
 
-            if (amount < 1000000)
+            if (amount < 999500)
             {
-                return (amount / 1000) + "k";
+                return Scale(amount, 1000) + "k";
             }
 
-            return (amount / 1000000) + "M";
+            return Scale(amount, 1000000) + "M";
+        }
+
+        // A tenth earns its width while the whole part is a single digit — "1.1k" says
+        // something "24.5k" does not — and a trailing ".0" never earns it.
+        private static string Scale(int amount, int unit)
+        {
+            if (amount / unit >= 10)
+            {
+                return ((amount + unit / 2) / unit).ToString();
+            }
+
+            long tenths = ((long)amount * 10 + unit / 2) / unit;
+            return tenths % 10 == 0
+                ? (tenths / 10).ToString()
+                : (tenths / 10) + "." + (tenths % 10);
         }
     }
 }
