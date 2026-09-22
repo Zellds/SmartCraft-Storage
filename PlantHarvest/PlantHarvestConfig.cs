@@ -14,7 +14,7 @@ namespace SmartCraftStorage.PlantHarvest
                 "PlantHarvestRadius",
                 10f,
                 new ConfigDescription(
-                    "Radius (in meters), around the player, in which ripe crops are harvested automatically and stored in the nearest chest.",
+                    "Radius (in meters), around the player, in which ripe crops are harvested automatically and stored in a nearby chest.",
                     new AcceptableValueRange<float>(0f, 25f),
                     new ConfigurationManagerAttributes { IsAdminOnly = true }));
 
@@ -23,7 +23,7 @@ namespace SmartCraftStorage.PlantHarvest
                 "PlantAutoHarvest",
                 false,
                 new ConfigDescription(
-                    "Experimental: automatically harvests ripe cultivated crops near the player and stores them in the nearest chest. Off by default, test it before relying on it.",
+                    "Experimental: automatically harvests ripe cultivated crops near the player and stores them in a nearby chest (see ChestOutputStrategy). Off by default, test it before relying on it.",
                     null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
         }
     }

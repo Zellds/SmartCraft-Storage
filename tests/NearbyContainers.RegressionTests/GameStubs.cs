@@ -126,8 +126,37 @@ public sealed class Container : UnityEngine.Component
 
 public sealed class Inventory
 {
-    public bool HaveEmptySlot() => true;
-    public int FindFreeStackSpace(string itemName, int worldLevel) => 0;
+    private readonly List<ItemDrop.ItemData> _items = new List<ItemDrop.ItemData>();
+
+    // Settable so "sorted but full" is expressible. The defaults match what this
+    // double returned before output ordering existed, so the older tests are unaffected.
+    public bool EmptySlot = true;
+    public int FreeStackSpace;
+
+    public bool HaveEmptySlot() => EmptySlot;
+    public int FindFreeStackSpace(string itemName, int worldLevel) => FreeStackSpace;
+    public List<ItemDrop.ItemData> GetAllItems() => _items;
+
+    public Inventory Holding(string itemName, int quality = 1)
+    {
+        _items.Add(new ItemDrop.ItemData
+        {
+            m_quality = quality,
+            m_shared = new ItemDrop.ItemData.SharedData { m_name = itemName }
+        });
+        return this;
+    }
+}
+
+public static class ItemDrop
+{
+    public sealed class ItemData
+    {
+        public SharedData m_shared;
+        public int m_quality;
+
+        public sealed class SharedData { public string m_name; }
+    }
 }
 
 public sealed class ZNetView

@@ -23,10 +23,11 @@ server doesn't need it at all.
 - **Available amounts:** Every ingredient shows what you can actually spend in brackets after the amount it needs — `10(34)` — in both the crafting panel and the build HUD, in a compact, exact or spaced format.
 - **Repair-all:** The station's Repair button fixes every repairable equipped item in one click instead of one at a time.
 - **Fuel and ingredients:** Fireplaces, smelters, charcoal kilns, and cooking stations pull fuel/ingredients from nearby chests and store their output automatically — each behavior toggleable on its own.
-- **Beehives:** Honey is harvested automatically as soon as it's ready and stored in the nearest chest, no need to visit the hive.
+- **Sorted output:** What a station produces goes into a chest that already holds that item, so sorted storage stays sorted — the bars keep landing in your iron chest even when an emptier one is closer. Falls back to the nearest chest with room when nothing nearby holds it yet (`ChestOutputStrategy`).
+- **Beehives:** Honey is harvested automatically as soon as it's ready and stored in a nearby chest, no need to visit the hive.
 - **Fermenter:** Automatically pulls any mead/potion base from nearby chests and stores the finished product once ready.
 - **Animal feeding:** Automatically feeds hungry tameable animals from nearby chests, taming or already-tamed.
-- **Plant harvest (in test, off by default):** Optionally auto-harvests ripe crops near the player into the nearest chest.
+- **Plant harvest (in test, off by default):** Optionally auto-harvests ripe crops near the player into a nearby chest.
 - **Epic Loot compatibility (optional):** If [Epic Loot](https://valheim.thunderstore.io/package/RandyKnapp/EpicLoot/) is also installed, the Enchanter can use materials from nearby chests too. On supported versions, `Alt + left-click` also protects marked equipment from Sacrifice, including equipment you carry.
 
 ## Hotkeys

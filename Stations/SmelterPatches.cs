@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HarmonyLib;
+using SmartCraftStorage.Config;
 using SmartCraftStorage.Shared;
 
 namespace SmartCraftStorage.Stations
@@ -250,7 +251,10 @@ namespace SmartCraftStorage.Stations
 
                     string itemName = conversion.m_to.m_itemData.m_shared.m_name;
 
-                    foreach (var container in NearbyContainers.Find(__instance.transform.position, StationConfig.SmelterKilnRadius.Value, player))
+                    foreach (var container in OutputChests.OrderForOutput(
+                                 NearbyContainers.Find(__instance.transform.position, StationConfig.SmelterKilnRadius.Value, player),
+                                 itemName,
+                                 ModConfig.ChestOutputStrategyConfig.Value))
                     {
                         if (remaining <= 0)
                         {

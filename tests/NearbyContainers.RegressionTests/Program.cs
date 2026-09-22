@@ -22,7 +22,14 @@ internal static class Program
             ReusesTheSweepUntilTheCacheExpires,
             RefreshesAfterPlayerMovementOrRadiusChange,
             FindsCartBeyondTheInitialHitBuffer,
-            DoesNotSearchStaticPiecesForCarts
+            DoesNotSearchStaticPiecesForCarts,
+            PrefersAChestThatAlreadyHoldsTheItemOverACloserOne,
+            KeepsNearestFirstOrderInsideEachGroup,
+            FallsBackToNearestWhenNoChestHoldsTheItem,
+            IgnoresQualityWhenMatchingOutput,
+            SkipsDestroyedContainersWhenOrdering,
+            NearestStrategyHandsBackTheSearchResultUnchanged,
+            OrderingDoesNotMutateTheSharedSearchCache
         };
         int failures = 0;
         foreach (var test in tests)
@@ -193,6 +200,107 @@ internal static class Program
         Expect(found.Count == 1 && ReferenceEquals(found[0], chest), "Ordinary chest discovery must keep working.");
         Expect(Component.VagonParentSearches == 0,
             "A scene without vehicle colliders must add no cart ancestry searches; observed " + Component.VagonParentSearches + ".");
+    }
+
+    // --- Output ordering: which nearby chest a station's product goes into ---
+
+    private static void PrefersAChestThatAlreadyHoldsTheItemOverACloserOne()
+    {
+        CreateChest(2f);
+        var ironChest = CreateChest(8f, "$item_iron");
+
+        var ordered = OrderForOutput("$item_iron");
+
+        Expect(ordered.Count == 2 && ReferenceEquals(ordered[0], ironChest),
+            "Expected the further chest already holding iron to be tried first.");
+    }
+
+    private static void KeepsNearestFirstOrderInsideEachGroup()
+    {
+        var farEmpty = CreateChest(9f);
+        var nearIron = CreateChest(4f, "$item_iron");
+        var nearEmpty = CreateChest(3f);
+        var farIron = CreateChest(7f, "$item_iron");
+
+        var ordered = OrderForOutput("$item_iron");
+
+        Expect(ordered.Count == 4
+               && ReferenceEquals(ordered[0], nearIron) && ReferenceEquals(ordered[1], farIron)
+               && ReferenceEquals(ordered[2], nearEmpty) && ReferenceEquals(ordered[3], farEmpty),
+            "Expected both iron chests first, nearest-first inside each group.");
+    }
+
+    private static void FallsBackToNearestWhenNoChestHoldsTheItem()
+    {
+        var near = CreateChest(3f, "$item_coal");
+        var far = CreateChest(8f, "$item_wood");
+
+        var ordered = OrderForOutput("$item_iron");
+
+        Expect(ordered.Count == 2 && ReferenceEquals(ordered[0], near) && ReferenceEquals(ordered[1], far),
+            "Expected the untouched nearest-first order when no chest holds the item.");
+    }
+
+    private static void IgnoresQualityWhenMatchingOutput()
+    {
+        CreateChest(2f);
+        var upgraded = CreateChest(8f);
+        upgraded.Inventory.Holding("$item_bronzesword", 3);
+
+        var ordered = OrderForOutput("$item_bronzesword");
+
+        Expect(ordered.Count == 2 && ReferenceEquals(ordered[0], upgraded),
+            "Expected the match to ignore quality; station output always carries the prefab's.");
+    }
+
+    private static void SkipsDestroyedContainersWhenOrdering()
+    {
+        var iron = CreateChest(8f, "$item_iron");
+        var candidates = new List<Container> { null, CreateChest(2f), iron };
+
+        var ordered = OutputChests.OrderForOutput(candidates, "$item_iron", ChestOutputStrategy.PreferSorted);
+
+        Expect(ordered.Count == 2 && ReferenceEquals(ordered[0], iron),
+            "Expected a destroyed (null) candidate to be dropped rather than thrown on.");
+    }
+
+    private static void NearestStrategyHandsBackTheSearchResultUnchanged()
+    {
+        CreateChest(2f);
+        CreateChest(8f, "$item_iron");
+        var found = Find();
+
+        var ordered = OutputChests.OrderForOutput(found, "$item_iron", ChestOutputStrategy.Nearest);
+
+        Expect(ReferenceEquals(ordered, found),
+            "Expected Nearest to hand the caller's own list straight back, copying nothing.");
+    }
+
+    private static void OrderingDoesNotMutateTheSharedSearchCache()
+    {
+        var near = CreateChest(2f);
+        var far = CreateChest(8f, "$item_iron");
+
+        OutputChests.OrderForOutput(Find(), "$item_iron", ChestOutputStrategy.PreferSorted);
+
+        // Inside the 0.25s window this is the same cached list every other feature reads.
+        var cached = Find();
+        Expect(cached.Count == 2 && ReferenceEquals(cached[0], near) && ReferenceEquals(cached[1], far),
+            "Ordering for output must not reorder the shared nearest-first search cache.");
+    }
+
+    private static List<Container> OrderForOutput(string itemName)
+        => OutputChests.OrderForOutput(Find(), itemName, ChestOutputStrategy.PreferSorted);
+
+    private static Container CreateChest(float distance, params string[] itemNames)
+    {
+        var chest = At(distance, "piece").AddComponent<Container>();
+        At(distance, "piece", chest.gameObject).AddComponent<Collider>();
+        foreach (var itemName in itemNames)
+        {
+            chest.Inventory.Holding(itemName);
+        }
+        return chest;
     }
 
     private static List<Container> Find() => NearbyContainers.Find(new Vector3(), 10f, Player.m_localPlayer);

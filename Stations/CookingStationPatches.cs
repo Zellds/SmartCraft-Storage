@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HarmonyLib;
+using SmartCraftStorage.Config;
 using SmartCraftStorage.Shared;
 using UnityEngine;
 
@@ -221,7 +222,10 @@ namespace SmartCraftStorage.Stations
 
                     string itemName = itemDrop.m_itemData.m_shared.m_name;
 
-                    foreach (var container in NearbyContainers.Find(__instance.transform.position, StationConfig.CookingStationRadius.Value, player))
+                    foreach (var container in OutputChests.OrderForOutput(
+                                 NearbyContainers.Find(__instance.transform.position, StationConfig.CookingStationRadius.Value, player),
+                                 itemName,
+                                 ModConfig.ChestOutputStrategyConfig.Value))
                     {
                         // Ask before adding: Inventory.AddItem on a full container
                         // returns false *and* logs "Trying to add item to occupied

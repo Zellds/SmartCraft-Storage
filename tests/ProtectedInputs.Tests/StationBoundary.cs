@@ -10,6 +10,7 @@ public sealed class ItemConversion
 
 public abstract class StationBase : UnityEngine.Object
 {
+    public string name = "test_station";
     public readonly UnityEngine.Transform transform = new UnityEngine.Transform();
     public ZNetView m_nview = new ZNetView();
     public int Progress;
@@ -77,7 +78,14 @@ public sealed class Smelter : StationBase
         }
         return null;
     }
-    public ItemConversion GetItemConversion(string ore) => null;
+    public ItemConversion OutputConversion;
+    public ItemConversion GetItemConversion(string ore) => OutputConversion;
+    // The collect path needs a conversion to produce; kiln detection keys on a
+    // conversion producing a prefab named "Coal", which this deliberately is not.
+    public void ConfigureOutput(string oreName, string barName)
+    {
+        OutputConversion = new ItemConversion { m_from = CreateItem(oreName), m_to = CreateItem(barName) };
+    }
     public override void ConfigureInput(string name)
     {
         m_conversion.Add(new ItemConversion { m_from = CreateItem(name) });
@@ -124,11 +132,18 @@ public sealed class Fermenter : StationBase
         }
         return null;
     }
-    public ItemConversion GetItemConversion(int hash) => null;
+    public ItemConversion OutputConversion;
+    public ItemConversion GetItemConversion(int hash) => OutputConversion;
     public override void ConfigureInput(string name)
     {
         m_conversion.Add(new ItemConversion { m_from = CreateItem(name) });
         m_nview.OnRpc = (_, __) => Progress++;
+    }
+    // What the tap path needs to have something to store.
+    public void ConfigureOutput(string name)
+    {
+        m_delayedTapItem = 1;
+        OutputConversion = new ItemConversion { m_from = CreateItem(name + "base"), m_to = CreateItem(name) };
     }
 }
 

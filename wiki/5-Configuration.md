@@ -36,6 +36,30 @@ you pick. The formats differ in how much shrinking they ask for:
 | `Exact` | `10(1087)` | The number in full, in the same small brackets |
 | `Spaced` | `10 (1087)` | The number in full at the game's own text size. Widest, and the most likely to be shrunk on a crowded recipe |
 
+## Output (which chest a station's product goes into)
+
+| Option | Default | Description |
+|---|---|---|
+| `ChestOutputStrategy` | `PreferSorted` | Which nearby chest a station stores its finished product in — see below |
+
+| Strategy | What it does |
+|---|---|
+| `PreferSorted` | A chest that already holds that item wins, even if a closer chest is empty. Only when no chest nearby holds it yet — or they're all full — does the nearest chest with room get it. Among chests that do hold it, the nearest wins |
+| `Nearest` | Always the closest chest with room. How this worked before `PreferSorted` existed |
+
+`PreferSorted` is what keeps sorted storage sorted: put the first iron bar in
+the chest you want iron to live in, and every bar after it follows. It applies
+to smelters, blast furnaces, charcoal kilns, cooking stations, beehives,
+fermenters and plant harvest alike.
+
+Two things worth knowing:
+
+- A charcoal kiln still feeds nearby fuel-hungry smelters *before* any chest,
+  under either strategy. Sorting only decides where the leftover coal goes.
+- Output can now split across two chests where it used to land in one: a sorted
+  chest with only one free stack-slot takes what fits, and the rest goes to the
+  next chest with room. Nothing is lost.
+
 ## Radii (storage/restock/crafting-from-chest)
 
 | Option | Default | Description |

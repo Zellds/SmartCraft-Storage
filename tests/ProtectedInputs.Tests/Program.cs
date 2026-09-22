@@ -17,6 +17,9 @@ internal static class Program
         Cases.Add(("locked-only and rejected removals create no station progress", FailedStationRemovalCreatesNoProgress));
         Cases.Add(("Epic Loot list count name and exact callbacks protect locked stacks", EpicLootCallbacksProtectLockedStacks));
         Cases.Add(("ALT lock toggle saves and invalidates availability", AltTogglePersistsAndInvalidates));
+        Cases.Add(("smelter output goes to the chest that already holds the bar", SmelterOutputPrefersTheSortedChest));
+        Cases.Add(("smelter output falls through a full sorted chest to one with room", SmelterOutputFallsThroughAFullSortedChest));
+        Cases.Add(("fermenter checks for room before claiming write access", FermenterChecksRoomBeforeClaimingWriteAccess));
 
         int failed = 0;
         foreach (var test in Cases)
@@ -211,6 +214,70 @@ internal static class Program
         Equal(20, reserved.m_stack);
         Equal(2, UnlockedInventory.CountItems(chest.GetInventory(), "wood", 2, true));
         Equal(0, playerInventory.CountItems("wood", 2, true));
+    }
+
+    // --- Output routing: which nearby chest a station's product lands in ---
+
+    private static void SmelterOutputPrefersTheSortedChest()
+    {
+        var smelter = new Smelter();
+        smelter.ConfigureOutput("ore", "iron");
+
+        var plainChest = TestWorld.CreateChest();
+        var ironChest = TestWorld.CreateChest();
+        ironChest.GetInventory().AddStack("iron", 3);
+
+        WithSmelterAutoCollect(() => Collect(smelter, "ore", 1));
+
+        Equal(4, ironChest.GetInventory().CountItems("iron"));
+        Equal(0, plainChest.GetInventory().CountItems("iron"));
+    }
+
+    private static void SmelterOutputFallsThroughAFullSortedChest()
+    {
+        var smelter = new Smelter();
+        smelter.ConfigureOutput("ore", "iron");
+
+        var fullIronChest = TestWorld.CreateChest();
+        fullIronChest.GetInventory().AddStack("iron", 3);
+        fullIronChest.GetInventory().EmptySlot = false;
+        var plainChest = TestWorld.CreateChest();
+
+        WithSmelterAutoCollect(() => Collect(smelter, "ore", 1));
+
+        Equal(3, fullIronChest.GetInventory().CountItems("iron"));
+        Equal(1, plainChest.GetInventory().CountItems("iron"));
+    }
+
+    private static void FermenterChecksRoomBeforeClaimingWriteAccess()
+    {
+        var fermenter = new Fermenter();
+        fermenter.ConfigureOutput("mead");
+
+        var fullChest = TestWorld.CreateChest();
+        fullChest.GetInventory().EmptySlot = false;
+        fullChest.m_nview.Owner = false;
+
+        InvokeNested("SmartCraftStorage.Stations.FermenterPatches+CollectRedirectPatch", "Prefix",
+            new object[] { fermenter }, _ => { });
+
+        Equal(0, fullChest.m_nview.ClaimCount);
+        Equal(false, fullChest.m_nview.Owner);
+    }
+
+    private static void Collect(Smelter smelter, string ore, int stack)
+    {
+        InvokeNested("SmartCraftStorage.Stations.SmelterPatches+CollectPatch", "Prefix",
+            new object[] { smelter, ore, stack }, _ => { });
+    }
+
+    private static void WithSmelterAutoCollect(Action body)
+    {
+        var setting = SmartCraftStorage.Stations.StationConfig.SmelterAutoCollect;
+        bool previous = setting.Value;
+        setting.Value = true;
+        try { body(); }
+        finally { setting.Value = previous; }
     }
 
     private static void InvokeNested(string typeName, string method, object[] args, Action<object[]> readBack)

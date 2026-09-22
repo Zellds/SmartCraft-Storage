@@ -1,4 +1,5 @@
 using BepInEx.Configuration;
+using SmartCraftStorage.Shared;
 
 namespace SmartCraftStorage.Config
 {
@@ -8,6 +9,7 @@ namespace SmartCraftStorage.Config
         public static ConfigEntry<float> CraftingChestRadius;
         public static ConfigEntry<bool> ShowAvailableAmounts;
         public static ConfigEntry<AmountFormat> AvailableAmountFormat;
+        public static ConfigEntry<ChestOutputStrategy> ChestOutputStrategyConfig;
         public static ConfigEntry<bool> DebugLogging;
 
         public static void Bind(ConfigFile config)
@@ -49,6 +51,17 @@ namespace SmartCraftStorage.Config
                 new ConfigDescription(
                     "Radius (in meters) in which crafting/building considers items from nearby chests.",
                     new AcceptableValueRange<float>(0f, 100f),
+                    new ConfigurationManagerAttributes { IsAdminOnly = true }));
+
+            // Shared by every station that stores what it produces, plus plant harvest,
+            // so it lives here rather than in StationConfig.
+            ChestOutputStrategyConfig = config.Bind(
+                "Output",
+                "ChestOutputStrategy",
+                ChestOutputStrategy.PreferSorted,
+                new ConfigDescription(
+                    "Which nearby chest a station's finished product goes into. PreferSorted keeps your sorting: a chest that already holds that item beats a closer one, and the nearest chest is only used when no chest nearby holds it yet (or they're all full). Nearest always takes the closest chest with room, which is how this worked before.",
+                    null,
                     new ConfigurationManagerAttributes { IsAdminOnly = true }));
         }
     }
