@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HarmonyLib;
 using UnityEngine;
 
 namespace SmartCraftStorage.Shared
@@ -162,6 +163,66 @@ namespace SmartCraftStorage.Shared
             }
 
             return inventory.HaveEmptySlot() || inventory.FindFreeStackSpace(itemName, Game.m_worldLevel) > 0;
+        }
+
+        // Container normally checks its ZDO at most once per second. A station may
+        // run in the gap, see an old local inventory and then become owner, which
+        // can serialize that stale state over the chest's real contents. Refresh
+        // while another peer still owns the ZDO, then claim ownership and hand the
+        // caller the refreshed inventory.
+        private static readonly System.Reflection.MethodInfo CheckForChangesMethod =
+            AccessTools.Method(typeof(Container), "CheckForChanges");
+
+        public static bool TryGetFreshWriteInventory(Container container, out Inventory inventory)
+        {
+            inventory = null;
+
+            var player = Player.m_localPlayer;
+            if (container == null || player == null
+                || !IsUsableBy(container, player.GetPlayerID()))
+            {
+                return false;
+            }
+
+            var nview = container.m_nview;
+            if (nview == null || !nview.IsValid())
+            {
+                return false;
+            }
+
+            // CheckForChanges loads the current ZDO only for a non-owner. Calling it
+            // before ClaimOwnership is therefore essential: after claiming, the
+            // container can save its old local inventory instead of loading it.
+            if (!nview.IsOwner())
+            {
+                if (CheckForChangesMethod == null)
+                {
+                    Debug.LogWarning("[SmartCraftStorage] Cannot refresh a remote container before writing; "
+                        + "skipping the write to avoid overwriting its inventory.");
+                    return false;
+                }
+
+                try
+                {
+                    CheckForChangesMethod.Invoke(container, null);
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogWarning("[SmartCraftStorage] Could not refresh a remote container before writing; "
+                        + "skipping the write to avoid overwriting its inventory. " + ex.Message);
+                    return false;
+                }
+            }
+
+            // Refreshing can reveal that somebody opened the chest or that access
+            // changed after Find() ran, so validate and claim only after the reload.
+            if (!TryClaimWriteAccess(container))
+            {
+                return false;
+            }
+
+            inventory = container.GetInventory();
+            return inventory != null;
         }
 
         public static bool TryClaimWriteAccess(ZNetView nview)

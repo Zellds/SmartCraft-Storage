@@ -108,13 +108,16 @@ namespace SmartCraftStorage.Stations
                         // occupied slot -1, -1" as an error rather than just declining,
                         // so ask first — room for one is enough, the count either side
                         // already handles a partial add.
-                        var chestInventory = container.GetInventory();
-                        if (!NearbyContainers.HasRoomFor(chestInventory, itemName))
+                        // A remote chest's local inventory can be up to a second
+                        // behind its ZDO. Refresh it before claiming ownership, so a
+                        // full chest is never written back from a stale empty view.
+                        Inventory chestInventory;
+                        if (!NearbyContainers.TryGetFreshWriteInventory(container, out chestInventory))
                         {
                             continue;
                         }
 
-                        if (!NearbyContainers.TryClaimWriteAccess(container))
+                        if (!NearbyContainers.HasRoomFor(chestInventory, itemName))
                         {
                             continue;
                         }
