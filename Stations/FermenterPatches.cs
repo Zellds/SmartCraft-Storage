@@ -1,4 +1,5 @@
 using HarmonyLib;
+using SmartCraftStorage.Config;
 using SmartCraftStorage.Shared;
 using UnityEngine;
 
@@ -134,11 +135,26 @@ namespace SmartCraftStorage.Stations
                     int remaining = conversion.m_producedItems;
                     string itemName = conversion.m_to.m_itemData.m_shared.m_name;
 
-                    foreach (var container in NearbyContainers.Find(__instance.transform.position, StationConfig.FermenterRadius.Value, player))
+                    foreach (var container in OutputChests.OrderForOutput(
+                                 NearbyContainers.Find(__instance.transform.position, StationConfig.FermenterRadius.Value, player),
+                                 itemName,
+                                 ModConfig.ChestOutputStrategyConfig.Value))
                     {
                         if (remaining <= 0)
                         {
                             break;
+                        }
+
+                        // Ask about room before claiming the chest: AddItem on a full
+                        // container logs "Trying to add item to occupied slot -1, -1" as
+                        // an error rather than declining, and claiming ownership of a
+                        // chest we then can't write to is needless churn on a server.
+                        // Sorted output makes this matter — the sorted chest is the one
+                        // that fills up, so it's now the first candidate tried.
+                        var chestInventory = container.GetInventory();
+                        if (!NearbyContainers.HasRoomFor(chestInventory, itemName))
+                        {
+                            continue;
                         }
 
                         if (!NearbyContainers.TryClaimWriteAccess(container))
@@ -146,7 +162,6 @@ namespace SmartCraftStorage.Stations
                             continue;
                         }
 
-                        var chestInventory = container.GetInventory();
                         int before = chestInventory.CountItems(itemName);
                         chestInventory.AddItem(conversion.m_to.gameObject, remaining);
                         int added = chestInventory.CountItems(itemName) - before;

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HarmonyLib;
+using SmartCraftStorage.Config;
 using SmartCraftStorage.Shared;
 using UnityEngine;
 
@@ -92,7 +93,13 @@ namespace SmartCraftStorage.Stations
                     // honey that was already in a nearly-full chest.
                     var stored = new List<(Inventory inventory, ItemDrop.ItemData item, int amount)>();
 
-                    var nearbyContainers = new List<Container>(NearbyContainers.Find(__instance.transform.position, StationConfig.BeehiveRadius.Value, player));
+                    // Keep the defensive copy: this body is long, mutates `stored`, and
+                    // OrderForOutput hands back a buffer that's only good until its next
+                    // call. It runs once per harvest, not per tick.
+                    var nearbyContainers = new List<Container>(OutputChests.OrderForOutput(
+                        NearbyContainers.Find(__instance.transform.position, StationConfig.BeehiveRadius.Value, player),
+                        itemName,
+                        ModConfig.ChestOutputStrategyConfig.Value));
                     DebugLog.Log($"[SmartCraftStorage] Beehive: RPC_Extract autoTriggered={isAutoTriggered}, "
                         + $"honeyLevel={honeyLevel}, totalHoney={totalHoney}, foundContainers={nearbyContainers.Count}, "
                         + $"radius={StationConfig.BeehiveRadius.Value}, position={__instance.transform.position}");

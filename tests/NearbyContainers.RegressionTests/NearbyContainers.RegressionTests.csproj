@@ -7,5 +7,6 @@
   <ItemGroup>
     <Compile Include="../../Shared/NearbyContainers.cs" Link="NearbyContainers.cs" />
     <Compile Include="../../Shared/ChestCountCache.cs" Link="ChestCountCache.cs" />
+    <Compile Include="../../Shared/OutputChests.cs" Link="OutputChests.cs" />
   </ItemGroup>
 </Project>

@@ -86,7 +86,14 @@ namespace HarmonyLib
 
 namespace SmartCraftStorage.Config
 {
-    internal static class ModConfig { public static readonly Setting<float> CraftingChestRadius = new Setting<float>(10f); }
+    internal static class ModConfig
+    {
+        public static readonly Setting<float> CraftingChestRadius = new Setting<float>(10f);
+        public static readonly Setting<bool> DebugLogging = new Setting<bool>(false);
+        // The enum is source-linked from Shared/, so there is no stub copy to drift.
+        public static readonly Setting<SmartCraftStorage.Shared.ChestOutputStrategy> ChestOutputStrategyConfig
+            = new Setting<SmartCraftStorage.Shared.ChestOutputStrategy>(SmartCraftStorage.Shared.ChestOutputStrategy.PreferSorted);
+    }
     internal sealed class Setting<T> { public T Value; public Setting(T value) { Value = value; } }
 }
 
@@ -108,7 +115,8 @@ public sealed class ZNetView : UnityEngine.Object
     public Action<string, object[]> OnRpc;
     public bool IsValid() => Valid;
     public bool IsOwner() => Owner;
-    public void ClaimOwnership() => Owner = true;
+    public int ClaimCount;
+    public void ClaimOwnership() { ClaimCount++; Owner = true; }
     public ZDO GetZDO() => Zdo;
     public void InvokeRPC(string name, params object[] args) => OnRpc?.Invoke(name, args);
 }
@@ -121,8 +129,12 @@ public sealed class Inventory
     private readonly List<ItemDrop.ItemData> _stacks = new List<ItemDrop.ItemData>();
     public Container Owner;
     public bool FailRemovals;
-    public bool HaveEmptySlot() => true;
-    public int FindFreeStackSpace(string name, int worldLevel) => 0;
+    // Settable so a "sorted but full" chest is expressible. The defaults match what
+    // this double returned before output ordering existed.
+    public bool EmptySlot = true;
+    public int FreeStackSpace;
+    public bool HaveEmptySlot() => EmptySlot;
+    public int FindFreeStackSpace(string name, int worldLevel) => FreeStackSpace;
     public int CountItems(string name, int quality = -1, bool matchWorldLevel = true)
     {
         int total = 0;

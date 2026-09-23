@@ -14,6 +14,13 @@ dotnet run --project tests/ProtectedInputs.Tests/ProtectedInputs.Tests.csproj `
   -p:RestoreAdditionalProjectSources= -p:NuGetAudit=false
 ```
 
-The eight cases verify deterministic local protection of locked stacks while
-unlocked stacks remain consumable. Live Unity UI, relogs, multiplayer and other
-mods' behavior still require an in-game check.
+The first eight cases verify deterministic local protection of locked stacks
+while unlocked stacks remain consumable. Three more cover station output
+routing at the real call sites: a smelter's bar going to the chest that already
+holds that item rather than the closest one, the same bar falling through to a
+chest with room when the sorted one is full, and the fermenter asking about
+room before it claims write access on a chest. Live Unity UI, relogs,
+multiplayer and other mods' behavior still require an in-game check.
+
+Ordering itself is unit-tested in `tests/NearbyContainers.RegressionTests`,
+which links `Shared/OutputChests.cs` with no config stub in the way.

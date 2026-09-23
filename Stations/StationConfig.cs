@@ -87,7 +87,7 @@ namespace SmartCraftStorage.Stations
                 new ConfigDescription("Smelters automatically pull ore/fuel from nearby chests.",
                     null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
             SmelterAutoCollect = config.Bind("Stations", "SmelterAutoCollect", true,
-                new ConfigDescription("Smelters store the produced bar in the nearest chest instead of dropping it on the ground.",
+                new ConfigDescription("Smelters store the produced bar in a nearby chest instead of dropping it on the ground. Which chest is picked is set by ChestOutputStrategy.",
                     null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
             KilnAutoRefuel = config.Bind("Stations", "KilnAutoRefuel", true,
                 new ConfigDescription("Charcoal kilns automatically pull wood from nearby chests.",
@@ -99,13 +99,13 @@ namespace SmartCraftStorage.Stations
                 new ConfigDescription("Cooking stations automatically pull raw food (and their own fuel, if applicable) from nearby chests.",
                     null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
             CookingStationAutoCollect = config.Bind("Stations", "CookingStationAutoCollect", true,
-                new ConfigDescription("Cooking stations collect finished food on their own and store it in the nearest chest, without needing to interact.",
+                new ConfigDescription("Cooking stations collect finished food on their own and store it in a nearby chest, without needing to interact. Which chest is picked is set by ChestOutputStrategy.",
                     null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
             BeehiveAutoCollect = config.Bind("Stations", "BeehiveAutoCollect", false,
-                new ConfigDescription("Beehives harvest honey on their own as soon as it's ready and store it in the nearest chest, without needing to interact.",
+                new ConfigDescription("Beehives harvest honey on their own as soon as it's ready and store it in a nearby chest, without needing to interact. Which chest is picked is set by ChestOutputStrategy.",
                     null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
             FermenterAutoProcess = config.Bind("Stations", "FermenterAutoProcess", true,
-                new ConfigDescription("Fermenters automatically pull any mead/potion base from nearby chests (mead, resistances, etc.) and store the finished product in the nearest chest once ready.",
+                new ConfigDescription("Fermenters automatically pull any mead/potion base from nearby chests (mead, resistances, etc.) and store the finished product in a nearby chest once ready. Which chest is picked is set by ChestOutputStrategy.",
                     null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
 
             KilnWoodBuffer = config.Bind(

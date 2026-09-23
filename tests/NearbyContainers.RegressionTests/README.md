@@ -33,12 +33,19 @@ dropped items or recursively searching arbitrary children.
 
 ## Coverage and limits
 
-The 14 tests cover cart discovery, ordinary chests, distance ordering, duplicate
+The 21 tests cover cart discovery, ordinary chests, distance ordering, duplicate
 colliders, parent-container precedence, empty vehicles, access rules at discovery
 and before writing, ownership, excluded layers, radius, cache reuse/expiry,
 movement/radius invalidation, collider-buffer growth, and avoiding cart ancestry
 searches on non-vehicle colliders. Access tests include
 local and remote in-use state, player access, wards and tombstones.
+
+The last seven cover output ordering (`Shared/OutputChests.cs`): preferring a
+chest that already holds the item over a closer one, nearest-first order inside
+each group, the fallback when no chest holds it, ignoring quality when matching,
+skipping a destroyed candidate, `Nearest` handing the caller's own list straight
+back, and — the important one — ordering for output leaving the shared
+nearest-first search cache untouched for every other feature reading it.
 
 The doubles model component ancestry, layer filtering and point overlaps.
 They do not execute Unity physics, Unity's destroyed-object semantics, real
