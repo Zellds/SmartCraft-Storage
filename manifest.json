@@ -1,7 +1,7 @@
 {
     "name": "SmartCraftStorage",
     "description": "Automates chest storage in Valheim: quick-stack, restock, craft/build from nearby chests, auto-fuel and collect at fireplaces/smelters/kilns/cooking stations/beehives/fermenters, auto-feed tameable animals, and repair everything at once.",
-    "version_number": "0.8.0",
+    "version_number": "0.9.0",
     "website_url": "https://github.com/Zellds/SmartCraft-Storage",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2350",

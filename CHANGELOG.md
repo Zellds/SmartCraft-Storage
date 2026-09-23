@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.0
+- Fixed a rare multiplayer bug where a station could overwrite a chest's real contents with a stale, out-of-date view of it right when taking ownership, silently losing whatever another player had just stored there (community contribution by [ManuelROAL](https://github.com/Zellds/SmartCraft-Storage/pull/19))
+- Stations now prefer a chest that already holds the item they're producing over a closer empty one, so sorted storage stays sorted. New `ChestOutputStrategy` setting to go back to always using the nearest chest with room. Also fixed the fermenter and plant harvest occasionally logging a harmless-but-noisy error when the closest chest was full (community contribution by [uy8Uk4N56G](https://github.com/Zellds/SmartCraft-Storage/pull/17))
+
 ## 0.8.0
 - Fixed the available-amount text (`10(34)`) overflowing into the next ingredient slot on crowded recipes; it now shrinks to fit instead
 - Added `AvailableAmountFormat` to choose how that number is written: `Compact` (abbreviates past a thousand, e.g. `1.1k`), `Exact` (the full number), or `Spaced` (the full number at the original size, like before this update) (community contribution by [uy8Uk4N56G](https://github.com/Zellds/SmartCraft-Storage/pull/15))
