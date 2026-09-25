@@ -52,7 +52,7 @@ and [MyLittleUI](https://github.com/shudnal/MyLittleUI). Marks follow items betw
 the inventory and extra slots, keep their size when icons are scaled, and avoid
 duplicate marks when Shield Me Bruh is installed. These mods are optional.
 
-Messages shown by quick-stack and restock are localized (English,
+Messages shown by quick-stack and restock are localized (English, French,
 Portuguese-Brazilian, Spanish so far) based on your in-game language.
 
 ## Links

@@ -19,6 +19,16 @@ namespace SmartCraftStorage.Translations
                 ["smartcraft_restock_nothing"] = "Nothing to restock from nearby chests."
             });
 
+            localization.AddTranslation("French", new Dictionary<string, string>
+            {
+                ["smartcraft_no_chest_nearby"] = "Aucun coffre à proximité.",
+                ["smartcraft_quickstack_success"] = "$1 objet(s) rangé(s) dans les coffres à proximité.",
+                ["smartcraft_quickstack_nothing"] = "Rien à ranger dans les coffres à proximité.",
+                ["smartcraft_restock_no_items_marked"] = "Aucun objet marqué pour le réapprovisionnement.",
+                ["smartcraft_restock_success"] = "$1 objet(s) réapprovisionné(s).",
+                ["smartcraft_restock_nothing"] = "Rien à réapprovisionner depuis les coffres à proximité."
+            });
+
             localization.AddTranslation("Portuguese_Brazilian", new Dictionary<string, string>
             {
                 ["smartcraft_no_chest_nearby"] = "Nenhum baú próximo.",
