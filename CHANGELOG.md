@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.10.0
+- Added French translation for quick-stack and restock messages (community contribution by [Merkur39](https://github.com/Zellds/SmartCraft-Storage/pull/21))
+
 ## 0.9.0
 - Fixed a rare multiplayer bug where a station could overwrite a chest's real contents with a stale, out-of-date view of it right when taking ownership, silently losing whatever another player had just stored there (community contribution by [ManuelROAL](https://github.com/Zellds/SmartCraft-Storage/pull/19))
 - Stations now prefer a chest that already holds the item they're producing over a closer empty one, so sorted storage stays sorted. New `ChestOutputStrategy` setting to go back to always using the nearest chest with room. Also fixed the fermenter and plant harvest occasionally logging a harmless-but-noisy error when the closest chest was full (community contribution by [uy8Uk4N56G](https://github.com/Zellds/SmartCraft-Storage/pull/17))
