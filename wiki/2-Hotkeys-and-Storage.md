@@ -19,8 +19,8 @@ Both modifier-clicks replace the normal click (they don't open/move the
 item) only while the modifier is held.
 
 Quick-stack and restock's on-screen messages are localized based on your
-in-game language (English, Portuguese-Brazilian, and Spanish so far — more
-can be added if there's demand).
+in-game language (English, French, Portuguese-Brazilian, and Spanish so far —
+more can be added if there's demand).
 
 ## Nearby chests: how they're chosen
 
