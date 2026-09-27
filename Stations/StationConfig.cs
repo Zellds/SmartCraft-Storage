@@ -96,7 +96,7 @@ namespace SmartCraftStorage.Stations
                 new ConfigDescription("Charcoal kilns store the coal they produce (or feed nearby smelters first) instead of dropping it on the ground.",
                     null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
             CookingStationAutoRefuel = config.Bind("Stations", "CookingStationAutoRefuel", true,
-                new ConfigDescription("Cooking stations automatically pull raw food (and their own fuel, if applicable) from nearby chests.",
+                new ConfigDescription("Cooking stations (including stone ovens) automatically pull raw food and fuel from nearby chests.",
                     null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
             CookingStationAutoCollect = config.Bind("Stations", "CookingStationAutoCollect", true,
                 new ConfigDescription("Cooking stations collect finished food on their own and store it in a nearby chest, without needing to interact. Which chest is picked is set by ChestOutputStrategy.",

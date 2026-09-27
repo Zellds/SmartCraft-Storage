@@ -40,7 +40,11 @@ namespace SmartCraftStorage.Stations
                     // range. Check whether there is any room to fill before searching
                     // for chests, so an idle full station costs nothing.
                     bool wantsFood = __instance.GetFreeSlot() != -1;
-                    bool wantsFuel = __instance.m_useFuel && __instance.m_fuelItem != null
+                    // Some cooking stations (including the stone oven in current
+                    // Valheim builds) expose a fuel item and capacity without
+                    // setting m_useFuel. The item/capacity pair is the reliable
+                    // indication that this station can be refueled.
+                    bool wantsFuel = __instance.m_fuelItem != null && __instance.m_maxFuel > 0
                         && __instance.GetFuel() < __instance.m_maxFuel;
                     if (!wantsFood && !wantsFuel)
                     {
@@ -99,7 +103,7 @@ namespace SmartCraftStorage.Stations
 
             private static void RefuelFuel(CookingStation station, List<Container> containers)
             {
-                if (!station.m_useFuel || station.m_fuelItem == null)
+                if (station.m_fuelItem == null || station.m_maxFuel <= 0)
                 {
                     return;
                 }
