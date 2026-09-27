@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.10.1
+- Fixed crafting raw fish at the Food Preparation Table using fish from nearby chests.
+
 ## 0.10.0
 - Added French translation for quick-stack and restock messages (community contribution by [Merkur39](https://github.com/Zellds/SmartCraft-Storage/pull/21))
 

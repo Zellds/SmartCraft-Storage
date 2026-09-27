@@ -82,6 +82,15 @@ namespace HarmonyLib
         public HarmonyPatch(Type type, string methodName) { }
         public HarmonyPatch(Type type, string methodName, Type[] argumentTypes) { }
     }
+    public static class AccessTools
+    {
+        public static System.Reflection.MethodInfo Method(Type type, string name)
+        {
+            return type.GetMethod(name, System.Reflection.BindingFlags.Instance
+                | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public
+                | System.Reflection.BindingFlags.NonPublic);
+        }
+    }
 }
 
 namespace SmartCraftStorage.Config
@@ -151,6 +160,13 @@ public sealed class Inventory
             if (item.m_shared.m_name == name && item.m_worldLevel >= Game.m_worldLevel) return item;
         return null;
     }
+    public ItemDrop.ItemData GetItem(string name, int quality)
+    {
+        foreach (var item in _stacks)
+            if (item.m_shared.m_name == name && item.m_quality == quality
+                && item.m_worldLevel >= Game.m_worldLevel) return item;
+        return null;
+    }
     public ItemDrop.ItemData AddStack(string name, int amount, int quality = 1, int worldLevel = 1)
     {
         var item = new ItemDrop.ItemData { m_stack = amount, m_quality = quality, m_worldLevel = (byte)worldLevel };
@@ -212,7 +228,25 @@ public sealed class ItemDrop
         public UnityEngine.GameObject m_dropPrefab;
         public bool m_cheated;
     }
-    public sealed class SharedData { public string m_name; }
+    public sealed class SharedData { public string m_name; public int m_maxQuality = 1; }
+}
+
+public sealed class Recipe
+{
+    public Piece.Requirement[] m_resources;
+    public bool m_requireOnlyOneIngredient;
+}
+
+public sealed class Piece
+{
+    public sealed class Requirement
+    {
+        public ItemDrop m_resItem;
+        public int m_amount = 1;
+        public int m_extraAmountOnlyOneIngredient;
+        public bool m_upgraderResource;
+        public int GetAmount(int quality) => m_amount;
+    }
 }
 
 public sealed class Container : UnityEngine.Object
@@ -242,8 +276,48 @@ public sealed class Player : UnityEngine.Object
     public bool Crafting;
     public long GetPlayerID() => 1;
     public Inventory GetInventory() => _inventory;
-    public object GetCurrentCraftingStation() => Crafting ? new object() : null;
+    public CraftingStation GetCurrentCraftingStation() => Crafting ? new CraftingStation() : null;
     public bool InPlaceMode() => false;
+    public ItemDrop.ItemData GetFirstRequiredItem(Inventory inventory, Recipe recipe, int qualityLevel,
+        out int amount, out int extraAmount, int craftMultiplier = 1)
+    {
+        amount = 0;
+        extraAmount = 0;
+        foreach (var requirement in recipe.m_resources)
+        {
+            int required = requirement.GetAmount(qualityLevel) * craftMultiplier;
+            string name = requirement.m_resItem.m_itemData.m_shared.m_name;
+            for (int quality = 0; quality <= requirement.m_resItem.m_itemData.m_shared.m_maxQuality; quality++)
+            {
+                if (inventory.CountItems(name, quality) >= required)
+                {
+                    amount = required;
+                    extraAmount = requirement.m_extraAmountOnlyOneIngredient;
+                    return inventory.GetItem(name, quality);
+                }
+            }
+        }
+        return null;
+    }
+}
+
+public sealed class CraftingStation : UnityEngine.Object
+{
+    public static bool FoodPreparationTableInRange;
+    public bool m_upgrader;
+    public static CraftingStation HaveBuildStationInRange(string name, UnityEngine.Vector3 point)
+    {
+        return FoodPreparationTableInRange && name == "$piece_preptable" ? new CraftingStation() : null;
+    }
+}
+
+public sealed class InventoryGui
+{
+    public static InventoryGui instance;
+    public static bool Visible;
+    public bool CraftTab;
+    public static bool IsVisible() => Visible;
+    public bool InCraftTab() => CraftTab;
 }
 
 public static class PrivateArea { public static bool CheckAccess(UnityEngine.Vector3 position, float radius, bool flash) => true; }
@@ -266,6 +340,9 @@ internal static class TestWorld
     {
         Colliders.Clear();
         Player.m_localPlayer = new Player();
+        CraftingStation.FoodPreparationTableInRange = false;
+        InventoryGui.Visible = false;
+        InventoryGui.instance = new InventoryGui();
         UnityEngine.Time.time += 1f;
         UnityEngine.Time.frameCount++;
     }

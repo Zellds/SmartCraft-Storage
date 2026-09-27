@@ -11,6 +11,9 @@ internal static class Program
     {
         Cases.Add(("locked chest stacks are excluded while free stacks remain consumable", LockedStacksAreReserved));
         Cases.Add(("crafting count and removal include only free chest stacks", CraftingUsesOnlyFreeChestStacks));
+        Cases.Add(("food preparation crafting counts and consumes nearby fish without carrying it", FoodPreparationCraftingUsesNearbyFish));
+        Cases.Add(("food preparation crafting only uses nearby chests while its craft tab is active", FoodPreparationContextIsScopedToItsCraftTab));
+        Cases.Add(("single ingredient fish recipe selects a chest fish for its output amount", SingleIngredientFishRecipeSelectsChestInput));
         Cases.Add(("cooking smelting fermenting and fireplace inputs skip locked first stacks", StationInputsSkipLockedStacks));
         Cases.Add(("station recipe ordering remains conversion-first", StationRecipeOrderingIsPreserved));
         Cases.Add(("cooking smelter and kiln fuel paths consume only eligible unlocked stacks", StationFuelPathsProtectLockedStacks));
@@ -214,6 +217,109 @@ internal static class Program
         Equal(20, reserved.m_stack);
         Equal(2, UnlockedInventory.CountItems(chest.GetInventory(), "wood", 2, true));
         Equal(0, playerInventory.CountItems("wood", 2, true));
+    }
+
+    private static void FoodPreparationCraftingUsesNearbyFish()
+    {
+        var playerInventory = Player.m_localPlayer.GetInventory();
+        var chest = TestWorld.CreateChest();
+        var reservedFish = chest.GetInventory().AddStack("fish", 1, quality: 1, worldLevel: 3);
+        SmartCraftStorage.ItemMarking.ItemFlags.SetLocked(reservedFish, true);
+        chest.GetInventory().AddStack("fish", 1, quality: 1, worldLevel: 3);
+        CraftingStation.FoodPreparationTableInRange = true;
+        InventoryGui.Visible = true;
+        InventoryGui.instance.CraftTab = true;
+
+        int available = playerInventory.CountItems("fish", 1, true);
+        InvokeNested("SmartCraftStorage.CraftingChestAccess.InventoryChestPatches+CountItemsPatch", "Postfix",
+            new object[] { playerInventory, "fish", 1, true, available }, args => available = (int)args[4]);
+        Equal(1, available);
+
+        int amount = 1;
+        InvokeNested("SmartCraftStorage.CraftingChestAccess.InventoryChestPatches+RemoveItemPatch", "Prefix",
+            new object[] { playerInventory, "fish", amount, 1, true }, args => amount = (int)args[2]);
+        playerInventory.RemoveItem("fish", amount, 1, true);
+        Equal(1, reservedFish.m_stack);
+        Equal(1, chest.GetInventory().CountItems("fish", 1, true));
+        Equal(0, UnlockedInventory.CountItems(chest.GetInventory(), "fish", 1, true));
+        Equal(0, playerInventory.CountItems("fish", 1, true));
+    }
+
+    private static void FoodPreparationContextIsScopedToItsCraftTab()
+    {
+        var playerInventory = Player.m_localPlayer.GetInventory();
+        var chest = TestWorld.CreateChest();
+        chest.GetInventory().AddStack("fish", 1, quality: 1, worldLevel: 3);
+        CraftingStation.FoodPreparationTableInRange = true;
+        InventoryGui.Visible = true;
+        InventoryGui.instance.CraftTab = false;
+
+        int available = playerInventory.CountItems("fish", 1, true);
+        InvokeNested("SmartCraftStorage.CraftingChestAccess.InventoryChestPatches+CountItemsPatch", "Postfix",
+            new object[] { playerInventory, "fish", 1, true, available }, args => available = (int)args[4]);
+        Equal(0, available);
+
+        InventoryGui.instance.CraftTab = true;
+        InventoryGui.Visible = false;
+        available = playerInventory.CountItems("fish", 1, true);
+        InvokeNested("SmartCraftStorage.CraftingChestAccess.InventoryChestPatches+CountItemsPatch", "Postfix",
+            new object[] { playerInventory, "fish", 1, true, available }, args => available = (int)args[4]);
+        Equal(0, available);
+
+        InventoryGui.Visible = true;
+        CraftingStation.FoodPreparationTableInRange = false;
+        available = playerInventory.CountItems("fish", 1, true);
+        InvokeNested("SmartCraftStorage.CraftingChestAccess.InventoryChestPatches+CountItemsPatch", "Postfix",
+            new object[] { playerInventory, "fish", 1, true, available }, args => available = (int)args[4]);
+        Equal(0, available);
+    }
+
+    private static void SingleIngredientFishRecipeSelectsChestInput()
+    {
+        var player = Player.m_localPlayer;
+        var inventory = player.GetInventory();
+        var chest = TestWorld.CreateChest();
+        var reservedFish = chest.GetInventory().AddStack("fish", 1, quality: 1, worldLevel: 3);
+        SmartCraftStorage.ItemMarking.ItemFlags.SetLocked(reservedFish, true);
+        var fish = chest.GetInventory().AddStack("fish", 1, quality: 2, worldLevel: 3);
+        CraftingStation.FoodPreparationTableInRange = true;
+        InventoryGui.Visible = true;
+        InventoryGui.instance.CraftTab = true;
+
+        var recipeItem = new ItemDrop();
+        recipeItem.m_itemData.m_shared.m_name = "raw_fish";
+        recipeItem.m_itemData.m_shared.m_maxQuality = 1;
+        var recipe = new Recipe
+        {
+            m_requireOnlyOneIngredient = true,
+            m_resources = new[]
+            {
+                new Piece.Requirement { m_resItem = new ItemDrop { m_itemData = { m_shared = { m_name = "fish", m_maxQuality = 2 } } } }
+            }
+        };
+
+        ItemDrop.ItemData selected = null;
+        int amount = 0;
+        int extraAmount = 0;
+        InvokeNested("SmartCraftStorage.CraftingChestAccess.InventoryChestPatches+GetFirstRequiredItemPatch", "Postfix",
+            new object[] { player, inventory, recipe, 1, amount, extraAmount, 1, selected }, args =>
+            {
+                amount = (int)args[4];
+                extraAmount = (int)args[5];
+                selected = (ItemDrop.ItemData)args[7];
+            });
+
+        Equal(fish, selected);
+        Equal(1, amount);
+        Equal(0, extraAmount);
+        Equal(2, selected.m_quality);
+
+        int consumed = amount;
+        InvokeNested("SmartCraftStorage.CraftingChestAccess.InventoryChestPatches+RemoveItemPatch", "Prefix",
+            new object[] { inventory, selected.m_shared.m_name, consumed, selected.m_quality, true }, args => consumed = (int)args[2]);
+        inventory.RemoveItem(selected.m_shared.m_name, consumed, selected.m_quality, true);
+        Equal(1, reservedFish.m_stack);
+        Equal(0, UnlockedInventory.CountItems(chest.GetInventory(), "fish", -1, true));
     }
 
     // --- Output routing: which nearby chest a station's product lands in ---
