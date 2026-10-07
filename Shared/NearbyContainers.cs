@@ -165,11 +165,12 @@ namespace SmartCraftStorage.Shared
             return inventory.HaveEmptySlot() || inventory.FindFreeStackSpace(itemName, Game.m_worldLevel) > 0;
         }
 
-        // Container normally checks its ZDO at most once per second. A station may
-        // run in the gap, see an old local inventory and then become owner, which
-        // can serialize that stale state over the chest's real contents. Claiming
-        // write access therefore reloads the inventory first, while another peer
-        // still owns the ZDO.
+        // Container normally checks its ZDO at most once per second, and a chest the
+        // game has only just instantiated has not checked it at all: until then its
+        // inventory is empty, even on the peer that owns it, as when a player comes
+        // back to their own base. A station may run in either gap and write, which
+        // serializes that stale view over the chest's real contents. Claiming write
+        // access therefore reloads the inventory first, owner or not.
         private static readonly System.Reflection.MethodInfo CheckForChangesMethod =
             AccessTools.Method(typeof(Container), "CheckForChanges");
 
@@ -191,9 +192,11 @@ namespace SmartCraftStorage.Shared
             return inventory != null;
         }
 
-        // CheckForChanges loads the current ZDO only for a non-owner. Calling it
-        // before ClaimOwnership is therefore essential: after claiming, the
-        // container can save its old local inventory instead of loading it.
+        // CheckForChanges reloads the inventory whenever the ZDO's revision differs
+        // from the last one this peer loaded or saved, owner or not; a chest just
+        // instantiated has loaded none yet, and one already up to date is left alone.
+        // Call it before ClaimOwnership: an owner saves its local inventory on every
+        // change, so a write that came first would store a view that was never loaded.
         private static bool RefreshBeforeClaim(Container container)
         {
             if (CheckForChangesMethod == null)
@@ -269,10 +272,10 @@ namespace SmartCraftStorage.Shared
                 return false;
             }
 
-            // Reload while another peer still owns the chest, then re-test: the reload
-            // can reveal that somebody opened it or that access changed since Find().
-            if (!nview.IsOwner()
-                && (!RefreshBeforeClaim(container) || !IsUsableBy(container, player.GetPlayerID())))
+            // Reload before claiming, even a chest this peer already owns, then
+            // re-test: the reload can reveal that somebody opened it or that access
+            // changed since Find().
+            if (!RefreshBeforeClaim(container) || !IsUsableBy(container, player.GetPlayerID()))
             {
                 return false;
             }

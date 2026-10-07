@@ -120,8 +120,22 @@ public sealed class Container : UnityEngine.Component
     public Inventory Inventory = new Inventory();
     public bool InUse;
     public bool Access = true;
-    // Production invokes this by name before claiming a remote chest.
-    private void CheckForChanges() { }
+    // What the chest's ZDO holds; null when nothing was ever saved to it.
+    public Inventory Stored;
+    // As in the game, a chest is instantiated with nothing loaded: its inventory stays
+    // empty until the first CheckForChanges, even on the peer that already owns it.
+    private uint _lastRevision = uint.MaxValue;
+
+    // Production invokes this by name before writing to a chest. Like the game's
+    // Container.Load, it reloads in place whenever the ZDO's revision differs from
+    // the last one this peer loaded, owner or not, unless the chest is open here.
+    private void CheckForChanges()
+    {
+        var zdo = m_nview.GetZDO();
+        if (!m_nview.IsValid() || zdo.DataRevision == _lastRevision || InUse) return;
+        _lastRevision = zdo.DataRevision;
+        if (Stored != null) Inventory.LoadFrom(Stored);
+    }
     public Inventory GetInventory() => Inventory;
     public bool IsInUse() => InUse;
     public bool CheckAccess(long playerId) => Access;
@@ -139,6 +153,16 @@ public sealed class Inventory
     public bool HaveEmptySlot() => EmptySlot;
     public int FindFreeStackSpace(string itemName, int worldLevel) => FreeStackSpace;
     public List<ItemDrop.ItemData> GetAllItems() => _items;
+
+    // The game reloads a chest in place, so anyone holding this instance sees the
+    // stored contents and how full they make it.
+    public void LoadFrom(Inventory stored)
+    {
+        _items.Clear();
+        _items.AddRange(stored._items);
+        EmptySlot = stored.EmptySlot;
+        FreeStackSpace = stored.FreeStackSpace;
+    }
 
     public Inventory Holding(string itemName, int quality = 1)
     {
@@ -173,7 +197,7 @@ public sealed class ZNetView
     public ZDO GetZDO() => Data;
 }
 
-public sealed class ZDO { public int InUse; public int GetInt(int key) => InUse; }
+public sealed class ZDO { public int InUse; public uint DataRevision; public int GetInt(int key) => InUse; }
 public static class ZDOVars { public const int s_inUse = 1; }
 public static class Game { public static int m_worldLevel; }
 public static class PrivateArea

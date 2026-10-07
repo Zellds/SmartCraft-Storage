@@ -33,9 +33,10 @@ dropped items or recursively searching arbitrary children.
 
 ## Coverage and limits
 
-The 21 tests cover cart discovery, ordinary chests, distance ordering, duplicate
+The 22 tests cover cart discovery, ordinary chests, distance ordering, duplicate
 colliders, parent-container precedence, empty vehicles, access rules at discovery
-and before writing, ownership, excluded layers, radius, cache reuse/expiry,
+and before writing, ownership, loading a chest this peer already owns before
+writing to it, excluded layers, radius, cache reuse/expiry,
 movement/radius invalidation, collider-buffer growth, and avoiding cart ancestry
 searches on non-vehicle colliders. Access tests include
 local and remote in-use state, player access, wards and tombstones.
@@ -55,6 +56,11 @@ adds a `Vagon` ancestry lookup only on uncached `vehicle` hits without a parent
 `Container`. A scene with 600 static colliders must add zero such lookups; the
 first cart patch performed 600. The vehicle layer is resolved once, alongside
 the query mask.
+
+The `Container` double also models the game's deferred inventory load: like
+`Container.Load`, its `CheckForChanges` reloads in place what the ZDO stores
+only when the ZDO revision differs from the last one loaded, so a chest starts
+out empty even on the peer that owns it.
 
 ## User-reported in-game comparison
 

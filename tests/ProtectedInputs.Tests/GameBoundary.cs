@@ -268,7 +268,7 @@ public sealed class Container : UnityEngine.Object
     public Incinerator IncineratorAncestor;
     public T GetComponentInParent<T>() where T : class => IncineratorAncestor as T;
     public readonly List<bool> OwnedWhenRefreshed = new List<bool>();
-    // Production invokes this by name before claiming a remote chest; the game's own
+    // Production invokes this by name before writing to any chest; the game's own
     // version reloads the inventory from the ZDO.
     private void CheckForChanges() { OwnedWhenRefreshed.Add(m_nview.Owner); }
     public bool IsInUse() => false;

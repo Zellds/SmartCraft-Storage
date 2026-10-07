@@ -17,6 +17,7 @@ internal static class Program
             RejectsUnavailableCarts,
             RechecksAccessBeforeClaimingACachedCart,
             ClaimsAnAvailableCart,
+            LoadsAnOwnedChestBeforeWritingToIt,
             KeepsItemAndTerrainLayersExcluded,
             ExcludesCartsOutsideTheRadius,
             ReusesTheSweepUntilTheCacheExpires,
@@ -136,6 +137,23 @@ internal static class Program
         var found = Find();
         Expect(found.Count == 1 && NearbyContainers.TryClaimWriteAccess(found[0]) && cart.m_nview.Owner,
             "A discovered, available cart must allow the normal ownership claim.");
+    }
+
+    // A player coming back to their base still owns its chests, but the game has just
+    // re-instantiated them, empty until their first CheckForChanges. A beehive
+    // collecting on its first tick must not take that view for the chest: saving it
+    // would replace everything the chest held with the honey.
+    private static void LoadsAnOwnedChestBeforeWritingToIt()
+    {
+        var chest = CreateChest(2f);
+        chest.m_nview.Owner = true;
+        chest.Stored = new Inventory { EmptySlot = false }.Holding("$item_wolf_meat_cooked");
+
+        Expect(NearbyContainers.TryGetFreshWriteInventory(chest, out var inventory),
+            "An available chest this peer already owns must stay writable.");
+        Expect(inventory.GetAllItems().Count == 1 && !NearbyContainers.HasRoomFor(inventory, "$item_honey"),
+            "Expected the chest's stored contents, full of meat, before anything is written to it; got "
+            + inventory.GetAllItems().Count + " stacks.");
     }
 
     private static void KeepsItemAndTerrainLayersExcluded()

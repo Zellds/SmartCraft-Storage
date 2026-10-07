@@ -25,6 +25,7 @@ internal static class Program
         Cases.Add(("fermenter checks for room before claiming write access", FermenterChecksRoomBeforeClaimingWriteAccess));
         Cases.Add(("an obliterator is never treated as a chest", ObliteratorIsNeverAChest));
         Cases.Add(("a remote chest is reloaded before ownership is claimed", RemoteChestIsReloadedBeforeClaiming));
+        Cases.Add(("a chest already owned is reloaded too, without claiming it again", OwnedChestIsReloadedWithoutClaimingItAgain));
         Cases.Add(("smelter auto-refuel skips blacklisted inputs by prefab, token or shown name", SmelterBlacklistSkipsListedInputs));
         Cases.Add(("smelter auto-refuel still pulls inputs that are not blacklisted", SmelterBlacklistKeepsOtherInputs));
         Cases.Add(("a disabled smelter-type station stops pulling from chests", DisabledStationStopsPulling));
@@ -396,15 +397,21 @@ internal static class Program
     {
         var remote = TestWorld.CreateChest();
         remote.m_nview.Owner = false;
-        var owned = TestWorld.CreateChest();
 
         Equal(true, NearbyContainers.TryClaimWriteAccess(remote));
         Equal(1, remote.OwnedWhenRefreshed.Count);
         Equal(false, remote.OwnedWhenRefreshed[0]);
         Equal(1, remote.m_nview.ClaimCount);
+    }
+
+    // Owning a chest doesn't mean its inventory is loaded: the game re-instantiates
+    // a player's base chests empty when they come back, and loads them a moment later.
+    private static void OwnedChestIsReloadedWithoutClaimingItAgain()
+    {
+        var owned = TestWorld.CreateChest();
 
         Equal(true, NearbyContainers.TryClaimWriteAccess(owned));
-        Equal(0, owned.OwnedWhenRefreshed.Count);
+        Equal(1, owned.OwnedWhenRefreshed.Count);
         Equal(0, owned.m_nview.ClaimCount);
     }
 
