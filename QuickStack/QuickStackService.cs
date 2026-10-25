@@ -87,7 +87,15 @@ namespace SmartCraftStorage.QuickStack
                     }
 
                     int amountToMove = Mathf.Min(freeSpace, item.m_stack);
-                    chestInventory.MoveItemToThis(playerInventory, item, amountToMove, existingStack.m_gridPos.x, existingStack.m_gridPos.y);
+                    int before = item.m_stack;
+                    if (!chestInventory.MoveItemToThis(playerInventory, item, amountToMove, existingStack.m_gridPos.x, existingStack.m_gridPos.y)
+                        || item.m_stack >= before)
+                    {
+                        // Merging can fail legitimately (Inventory.AddItem also compares
+                        // m_worldLevel, which the match above does not), or because another
+                        // mod vetoed the move. Either way this stack is not an option.
+                        continue;
+                    }
                 }
 
                 while (item.m_stack > 0)
@@ -99,7 +107,17 @@ namespace SmartCraftStorage.QuickStack
                     }
 
                     int amountToMove = Mathf.Min(item.m_shared.m_maxStackSize, item.m_stack);
-                    chestInventory.MoveItemToThis(playerInventory, item, amountToMove, newSlot.x, newSlot.y);
+                    int before = item.m_stack;
+                    // MoveItemToThis can be vetoed by other mods (EquipmentSlots' ForeignMoveGuard
+                    // returns false for items in its slot rows or padlocked cells) and then does
+                    // not touch m_stack. Without this check the loop would spin forever on the
+                    // same empty slot and freeze the game.
+                    if (!chestInventory.MoveItemToThis(playerInventory, item, amountToMove, newSlot.x, newSlot.y)
+                        || item.m_stack >= before)
+                    {
+                        DebugLog.Log($"[SmartCraft-Storage] Quick-stack: move of {item.m_shared.m_name} refused by the game or another mod; leaving it in place.");
+                        return originalStack - item.m_stack;
+                    }
                 }
             }
 
