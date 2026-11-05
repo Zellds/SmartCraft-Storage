@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.12.2
+- Fixed the game freezing when you pressed quick-stack with an item in a slot managed by another mod (such as the equipment, quick and quiver slots of CDEV EquipmentSlots) while a nearby chest already held the same item. That item now simply stays where it is (community contribution by [kislovm](https://github.com/Zellds/SmartCraft-Storage/pull/33))
+
 ## 0.12.1
 - Fixed a bug where a station, most often an automatic beehive, could empty a chest right after you came back to your base: it saw the chest as empty before the game had loaded it, and saved that view over the chest's contents (community contribution by [Merkur39](https://github.com/Zellds/SmartCraft-Storage/pull/32))
 
